@@ -1,9 +1,0 @@
-LICENSE
-README.md
-pyproject.toml
-setup.cfg
-src/task3/__init__.py
-src/task3_Luca_Mueller.egg-info/PKG-INFO
-src/task3_Luca_Mueller.egg-info/SOURCES.txt
-src/task3_Luca_Mueller.egg-info/dependency_links.txt
-src/task3_Luca_Mueller.egg-info/top_level.txt
