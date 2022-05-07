@@ -1,0 +1,5 @@
+findpeaks==2.4.0
+opencv_python==4.5.5.64
+matplotlib==3.5.1
+numpy==1.18.4
+Pillow==9.1.0
