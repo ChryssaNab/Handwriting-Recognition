@@ -1,4 +1,4 @@
-# Character Recognition
+# Character Recognition for Dead Sea Scrolls
 
 ### [**Contents**](#) <a name="cont"></a>
 1. [Project Description](#descr)
