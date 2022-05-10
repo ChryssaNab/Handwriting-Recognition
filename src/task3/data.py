@@ -1,10 +1,10 @@
-from pathlib import Path
 import tensorflow as tf
 from typing import Tuple
+from pathlib import Path
 from sklearn.model_selection import train_test_split
 
 
-# your path to the IAM folder
+# Set path to the IAM folder
 local_path_to_iam = "C:\\Users\\muell\\Desktop\\HWR\\Task 3\\Data"
 data_dir = Path(local_path_to_iam) / "IAM-data"
 img_dir = data_dir / "img"
@@ -52,14 +52,14 @@ def load_dataset(data_dict: dict) -> tf.data.Dataset:
     labels = tf.data.Dataset.from_tensor_slices(raw_labels)
 
     # absolute img paths as dataset
-    images = tf.data.Dataset.list_files([str(img_dir.absolute() / f) for f in raw_files])
+    images = tf.data.Dataset.from_tensor_slices([str(img_dir.absolute() / f) for f in raw_files])
 
-    # load images from paths
+    # Load images from paths
     images = images.map(lambda x: tf.io.read_file(x))
     images = images.map(lambda x: tf.io.decode_png(x))
     #images = images.map(lambda x: tf.squeeze(x))
 
-    # combine images, filenames and labels
+    # Combine images, filenames and labels
     dataset = tf.data.Dataset.zip((images, files, labels))
 
     return dataset
@@ -103,7 +103,7 @@ def distortion_free_resize(image: tf.Tensor, img_size: Tuple[int, int]) -> tf.Te
 
 
 def scale_img(image: tf.Tensor) -> tf.Tensor:
-    return tf.cast(image, tf.float32) / 255.1
+    return tf.cast(image, tf.float32) / 255.
 
 
 def preprocess(image: tf.Tensor) -> tf.Tensor:
@@ -123,8 +123,6 @@ def split_data(i, l):
 
 def test(image_width: int, image_height: int):
     data_dict = load_data_dict()
-    # TODO: what does this line mean?
-    #im, la, \
     dataset = load_dataset(data_dict)
 
     # preprocessing example
@@ -148,7 +146,9 @@ if __name__ == "__main__":
 
     image_width = 512
     image_height = 64
-    data = test(image_width, image_height)
+    #data = test(image_width, image_height)
+    data = load_dataset(load_data_dict())
+    data = data.apply(remove_filenames)
     images, labels = zip(*data)
     x_train, x_test, y_train, y_test = split_data(images, labels)
 
@@ -158,5 +158,8 @@ if __name__ == "__main__":
     print(len(y_test))
 
     import matplotlib.pyplot as plt
-    plt.imshow(x_train[0])
-    plt.show()
+    it = data.as_numpy_iterator()
+    for d in it:
+        plt.imshow(d[0])
+        plt.title(d[1])
+        plt.show()
