@@ -17,7 +17,7 @@ def print_status_bar(iteration: int, total: int, loss, metrics=None):
     """
     metrics = " - ".join([f"{m.name}: {m.result():.4f}" for m in [loss] + (metrics or [])])
     end = "" if iteration < total else "\n"
-    print(f"\r{iteration:<5}/{total:<5} {metrics}", end=end)
+    print(f"\r{iteration:<5}/{total:>5}\t{metrics}", end=end)
 
 
 def train_model(model: tf.keras.Sequential,
@@ -30,6 +30,7 @@ def train_model(model: tf.keras.Sequential,
                 batch_size: int = 32,
                 ):
 
+    n_samples = dataset.cardinality() - dataset.cardinality() % batch_size
     unbatched_dataset = dataset.shuffle(dataset.cardinality())
     for epoch in range(1, n_epochs + 1):
         dataset = unbatched_dataset.batch(batch_size=batch_size, drop_remainder=True)
@@ -37,8 +38,13 @@ def train_model(model: tf.keras.Sequential,
             X_batch, y_batch = batch[0], batch[1]
             with tf.GradientTape() as tape:
                 y_pred = model(X_batch, training=True)
-                # TODO: implement CTC loss
+                # TODO: remove this once CTC works
                 main_loss = tf.reduce_mean(loss_fn(y_batch, y_pred))
+                # TODO: implement CTC loss
+                max_seq_length = max(list(map(lambda x: len(x), y_pred)))
+                labels = tf.pad(y_batch, paddings=[[0, 0], [0, max_seq_length]])
+                label_length = list(map(lambda x: len(x), y_batch))
+                #main_loss = tf.nn.ctc_loss(labels, , label_length)
                 loss = tf.add_n([main_loss] + model.losses)
 
             gradients = tape.gradient(loss, model.trainable_weights)
@@ -48,8 +54,8 @@ def train_model(model: tf.keras.Sequential,
             for metric in metrics:
                 metric(y_batch, y_pred)
 
-            print_status_bar(step * batch_size, dataset.cardinality(), mean_loss, metrics)
-        print_status_bar(dataset.cardinality(), dataset.cardinality(), mean_loss, metrics)
+            print_status_bar(step * batch_size, n_samples, mean_loss, metrics)
+        print_status_bar(n_samples, n_samples, mean_loss, metrics)
 
         for metric in [mean_loss] + metrics:
             metric.reset_states()

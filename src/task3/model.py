@@ -28,7 +28,7 @@ def build_LSTM_model(batch_size=32) -> tf.keras.Sequential:
         tf.keras.layers.MaxPool2D(pool_size=(1, 2), padding="same"),
         tf.keras.layers.Lambda(lambda x: tf.squeeze(x)),
         tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(512)),
-        tf.keras.layers.Dense(10, activation='softmax')
+        tf.keras.layers.Dense(100, activation='softmax')
     ])
 
     return model

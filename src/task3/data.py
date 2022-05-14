@@ -9,7 +9,7 @@ from sklearn.model_selection import train_test_split
 
 
 # Set path to the IAM folder
-local_path_to_iam = "C:\\Users\\muell\\Desktop\\HWR\\Task 3\\Data"
+local_path_to_iam = "C:\\Users\\Luca\\Desktop\\HWR"
 data_dir = Path(local_path_to_iam) / "IAM-data"
 img_dir = data_dir / "img"
 
@@ -61,7 +61,6 @@ def load_dataset(data_dict: dict) -> tf.data.Dataset:
     # Load images from paths
     images = images.map(lambda x: tf.io.read_file(x))
     images = images.map(lambda x: tf.io.decode_png(x))
-    #images = images.map(lambda x: tf.squeeze(x))
 
     # Combine images, filenames and labels
     dataset = tf.data.Dataset.zip((images, files, labels))
