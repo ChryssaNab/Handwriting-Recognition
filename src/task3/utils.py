@@ -6,6 +6,13 @@ import tensorflow as tf
 from typing import List
 
 
+def pad_label(label: bytes, width: int = 100, pad_char: bytes = b" ") -> bytes:
+    to_pad = width - len(label)
+    if to_pad <= 0:
+        return label
+    return label + pad_char * to_pad
+
+
 def print_status_bar(iteration: int, total: int, loss, metrics=None):
     """
     Custom function to print training progress and metrics
@@ -30,7 +37,11 @@ def train_model(model: tf.keras.Sequential,
                 batch_size: int = 32,
                 ):
 
+    # for status bar
     n_samples = dataset.cardinality() - dataset.cardinality() % batch_size
+    # input width for CTC loss
+    logit_length = tf.constant(model.get_layer(index=0).input.shape[1], shape=(batch_size))
+    # create new batches for each epoch
     unbatched_dataset = dataset.shuffle(dataset.cardinality())
     for epoch in range(1, n_epochs + 1):
         dataset = unbatched_dataset.batch(batch_size=batch_size, drop_remainder=True)
@@ -38,13 +49,9 @@ def train_model(model: tf.keras.Sequential,
             X_batch, y_batch = batch[0], batch[1]
             with tf.GradientTape() as tape:
                 y_pred = model(X_batch, training=True)
-                # TODO: remove this once CTC works
-                main_loss = tf.reduce_mean(loss_fn(y_batch, y_pred))
-                # TODO: implement CTC loss
-                max_seq_length = max(list(map(lambda x: len(x), y_pred)))
-                labels = tf.pad(y_batch, paddings=[[0, 0], [0, max_seq_length]])
                 label_length = list(map(lambda x: len(x), y_batch))
-                #main_loss = tf.nn.ctc_loss(labels, , label_length)
+                labels = tf.constant(list(map(lambda x: pad_label(x), y_batch)))
+                main_loss = tf.nn.ctc_loss(labels, y_pred, label_length, logit_length, logits_time_major=False)
                 loss = tf.add_n([main_loss] + model.losses)
 
             gradients = tape.gradient(loss, model.trainable_weights)
