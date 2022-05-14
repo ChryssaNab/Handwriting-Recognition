@@ -43,15 +43,15 @@ def load_dataset(data_dict: dict) -> tf.data.Dataset:
     :return: tf.data.Dataset (image, filename, label)
     """
 
-    # list of filenames & labels as strings
+    # List of filenames & labels as strings
     raw_files = list(data_dict.keys())
     raw_labels = list(data_dict.values())
 
-    # filenames & labels as datasets
+    # Filenames & labels as datasets
     files = tf.data.Dataset.from_tensor_slices(raw_files)
     labels = tf.data.Dataset.from_tensor_slices(raw_labels)
 
-    # absolute img paths as dataset
+    # Absolute img paths as dataset
     images = tf.data.Dataset.from_tensor_slices([str(img_dir.absolute() / f) for f in raw_files])
 
     # Load images from paths
@@ -116,6 +116,21 @@ def remove_filenames(dataset: tf.data.Dataset) -> tf.data.Dataset:
     return tf.data.Dataset.zip((x, y))
 
 
+def train_test_split_iam(dataset: tf.data.Dataset,
+                         train_size=0.8,
+                         shuffle=False,
+                         ) -> Tuple[tf.data.Dataset, tf.data.Dataset]:
+    assert 0.0 < train_size < 1.0, f"Parameter train_size not a float in range (0, 1): {train_size}"
+    ds_size = int(dataset.cardinality())
+    test_size = 1.0 - train_size
+    n_test_samples = int(ds_size * test_size)
+    if shuffle:
+        dataset.shuffle()
+    test_dataset = dataset.take(n_test_samples)
+    train_dataset = dataset.skip(n_test_samples)
+    return train_dataset, test_dataset
+
+
 def split_data(i, l):
     x_tr, x_te, y_tr, y_te = train_test_split(i, l, train_size=0.95)
     return x_tr, x_te, y_tr, y_te
@@ -147,8 +162,7 @@ if __name__ == "__main__":
     image_width = 512
     image_height = 64
     #data = test(image_width, image_height)
-    data = load_dataset(load_data_dict())
-    data = data.apply(remove_filenames)
+    data = test(image_width, image_height)
     images, labels = zip(*data)
     x_train, x_test, y_train, y_test = split_data(images, labels)
 
@@ -163,3 +177,4 @@ if __name__ == "__main__":
         plt.imshow(d[0])
         plt.title(d[1])
         plt.show()
+        #print(d[0].shape)
