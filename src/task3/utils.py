@@ -17,7 +17,7 @@ def print_status_bar(iteration: int, total: int, loss, metrics=None):
     """
     metrics = " - ".join([f"{m.name}: {m.result():.4f}" for m in [loss] + (metrics or [])])
     end = "" if iteration < total else "\n"
-    print(f"\r{iteration}/{total}" + metrics, end=end)
+    print(f"\r{iteration:<5}/{total:<5} {metrics}", end=end)
 
 
 def train_model(model: tf.keras.Sequential,
@@ -30,14 +30,12 @@ def train_model(model: tf.keras.Sequential,
                 batch_size: int = 32,
                 ):
 
-    n_steps = dataset.cardinality() // batch_size
     unbatched_dataset = dataset.shuffle(dataset.cardinality())
-
     for epoch in range(1, n_epochs + 1):
         dataset = unbatched_dataset.batch(batch_size=batch_size, drop_remainder=True)
-        for step in range(1, n_steps + 1):
-            X_batch, y_batch = dataset.map(lambda x, y: x), dataset.map(lambda x, y: y)
-            with tf.GradientTape as tape:
+        for step, batch in dataset.enumerate().as_numpy_iterator():
+            X_batch, y_batch = batch[0], batch[1]
+            with tf.GradientTape() as tape:
                 y_pred = model(X_batch, training=True)
                 # TODO: implement CTC loss
                 main_loss = tf.reduce_mean(loss_fn(y_batch, y_pred))
