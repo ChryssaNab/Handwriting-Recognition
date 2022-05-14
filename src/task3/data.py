@@ -1,3 +1,7 @@
+"""
+Data loading and processing utilities for IAM
+"""
+
 import tensorflow as tf
 from typing import Tuple
 from pathlib import Path
