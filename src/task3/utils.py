@@ -96,6 +96,7 @@ def train_model(model: tf.keras.Sequential,
     unbatched_dataset = dataset.shuffle(batch_size * 10)
 
     for epoch in range(1, n_epochs + 1):
+        print(f"Epoch {epoch:<3} / {n_epochs:>3}")
         dataset = unbatched_dataset.batch(batch_size=batch_size, drop_remainder=True)
         for step, batch in dataset.enumerate().as_numpy_iterator():
             X_batch, y_batch = batch[0], batch[1]

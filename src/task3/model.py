@@ -7,8 +7,17 @@ import tensorflow as tf
 
 
 def build_LSTM_model(n_classes: int, batch_size=32) -> tf.keras.Sequential:
-    # HWR in Historical Documents, p.38
-    # https://web.archive.org/web/20210814184909id_/https://repositum.tuwien.at/bitstream/20.500.12708/5409/2/Scheidl%20Harald%20-%202018%20-%20Handwritten%20text%20recognition%20in%20historical%20documents.pdf
+    """
+    Model architecture adapted from:
+    Handwritten Text Recognition in Historical Documents, p.38
+    https://web.archive.org/web/20210814184909id_/https://repositum.tuwien.at/bitstream/20.500.12708/5409/2/Scheidl%20Harald%20-%202018%20-%20Handwritten%20text%20recognition%20in%20historical%20documents.pdf
+
+    :param n_classes: number of classes to predict (i.e. number of characters)
+    :param batch_size: training batch size
+    :return: the model as keras Sequential model
+    """
+
+
     model = tf.keras.models.Sequential([
         tf.keras.layers.InputLayer(input_shape=(800, 64, 1), batch_size=batch_size),
         tf.keras.layers.Conv2D(64, 5, padding="same"),
