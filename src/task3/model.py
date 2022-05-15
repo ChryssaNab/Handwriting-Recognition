@@ -2,7 +2,6 @@
 Model architectures for IAM
 """
 
-
 import tensorflow as tf
 
 

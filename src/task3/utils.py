@@ -2,6 +2,8 @@
 Custom Training utilities for IAM
 """
 
+# TODO: put functions in proper modules
+
 import tensorflow as tf
 from typing import List
 
@@ -98,7 +100,6 @@ def train_model(model: tf.keras.Sequential,
     for epoch in range(1, n_epochs + 1):
         print(f"Epoch {epoch:<3} / {n_epochs:>3}")
         dataset = unbatched_dataset.batch(batch_size=batch_size, drop_remainder=True)
-        X_batch, label_length = None, None
         for step, batch in dataset.enumerate().as_numpy_iterator():
             X_batch, y_batch = batch[0], batch[1]
             with tf.GradientTape() as tape:

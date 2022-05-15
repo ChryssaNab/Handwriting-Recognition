@@ -1,3 +1,7 @@
+"""
+Train and test a model on the IAM dataset.
+"""
+
 import tensorflow as tf
 import os
 from task3.data import *
