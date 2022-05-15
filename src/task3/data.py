@@ -128,7 +128,7 @@ def train_test_split_iam(dataset: tf.data.Dataset,
     test_size = 1.0 - train_size
     n_test_samples = int(ds_size * test_size)
     if shuffle:
-        dataset.shuffle()
+        dataset.shuffle(dataset.cardinality())
     test_dataset = dataset.take(n_test_samples)
     train_dataset = dataset.skip(n_test_samples)
     return train_dataset, test_dataset

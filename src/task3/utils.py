@@ -37,7 +37,7 @@ def label_encoding(label: bytes, chars: List[str]) -> tf.Tensor:
     return t_label
 
 
-def label_decoding(label: tf.Tensor, chars: List[str]) -> tf.string:
+def label_decoding(label: tf.Tensor, chars: List[str]) -> str:
     """
     Decode a tensor containing an encoded label.
     Uses int values in label tensor to find characters in chars.
@@ -48,7 +48,7 @@ def label_decoding(label: tf.Tensor, chars: List[str]) -> tf.string:
     """
     e_label = [chars[i] for i in label]
     s_label = "".join(e_label)
-    return s_label
+    return str(s_label)
 
 
 def print_status_bar(iteration: int, total: int, loss, metrics=None):
@@ -98,10 +98,13 @@ def train_model(model: tf.keras.Sequential,
     for epoch in range(1, n_epochs + 1):
         print(f"Epoch {epoch:<3} / {n_epochs:>3}")
         dataset = unbatched_dataset.batch(batch_size=batch_size, drop_remainder=True)
+        X_batch, label_length = None, None
         for step, batch in dataset.enumerate().as_numpy_iterator():
             X_batch, y_batch = batch[0], batch[1]
             with tf.GradientTape() as tape:
+                # get predictions and transpose to get time major representation
                 y_pred = model(X_batch, training=True)
+                y_pred = tf.transpose(y_pred, [1, 0, 2])
 
                 # get label lengths and encodings for CTC loss
                 label_length = tf.constant(list(map(lambda y: len(y), y_batch)))
@@ -110,7 +113,7 @@ def train_model(model: tf.keras.Sequential,
                 labels = tf.convert_to_tensor(labels)
 
                 # calculate loss
-                main_loss = tf.nn.ctc_loss(labels, y_pred, label_length, logit_length, logits_time_major=False)
+                main_loss = tf.nn.ctc_loss(labels, y_pred, label_length, logit_length, logits_time_major=True)
                 loss = tf.add_n([main_loss] + model.losses)
 
             # update weights
@@ -131,3 +134,30 @@ def train_model(model: tf.keras.Sequential,
             metric.reset_states()
 
     return metrics
+
+
+# TODO: Finish this function
+def test_model( model: tf.keras.Sequential,
+                X: tf.data.Dataset,
+                seq_lens: tf.Tensor,
+                tokens: List[str],
+                metrics: List[tf.keras.metrics.Metric] = None,
+                mean_loss: tf.keras.metrics.Metric = tf.keras.metrics.Mean(),
+                batch_size: int = 32,
+                ):
+
+    y_decoded = list()
+
+    for batch in iter(X):
+        if isinstance(X, tf.data.Dataset):
+            y_pred = model.predict(batch)
+        else:
+            y_pred = model(X, training=False)
+        y_pred = tf.transpose(y_pred, [1, 0, 2])
+        outputs = tf.nn.ctc_greedy_decoder(y_pred, seq_lens)
+        for s_samples in outputs[0]:
+            d_samples = tf.sparse.to_dense(s_samples)
+            for sample in d_samples:
+                y_decoded.append(str(label_decoding(sample, tokens)))
+
+    return y_decoded
