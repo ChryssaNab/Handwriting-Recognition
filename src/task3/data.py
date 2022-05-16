@@ -9,7 +9,8 @@ from sklearn.model_selection import train_test_split
 
 
 # Set path to the IAM folder
-local_path_to_iam = "C:\\Users\\Luca\\Desktop\\HWR"
+#"C:\\Users\\Luca\\Desktop\\HWR"
+local_path_to_iam = "C:\\Users\\muell\\Desktop\\HWR\\Task 3\\Data"
 data_dir = Path(local_path_to_iam) / "IAM-data"
 img_dir = data_dir / "img"
 

@@ -4,21 +4,20 @@ Train and test a model on the IAM dataset.
 
 import tensorflow as tf
 import os
+FORCE_CPU = True
+if FORCE_CPU:
+    os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 from task3.data import *
 from task3.model import *
 from task3.utils import *
 
 
 # Settings
-FORCE_CPU = False
 EPOCHS = 1
 BATCH_SIZE = 32
 LEARNING_RATE = 0.005
 OPTIMIZER = tf.keras.optimizers.RMSprop(LEARNING_RATE)
 METRICS = []
-
-if FORCE_CPU:
-    os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 # Load data
 data_dict = load_data_dict()
@@ -43,7 +42,7 @@ chars = sorted(list(set(full_text)))
 model = build_LSTM_model(len(chars) + 1)
 
 train_model(model,
-            train_ds.take(64),
+            train_ds.take(32),
             chars,
             EPOCHS,
             OPTIMIZER,
@@ -53,7 +52,7 @@ train_model(model,
 
 pred = test_model(model,
                   test_ds.map(lambda x, y: x).batch(batch_size=32, drop_remainder=True).take(1),
-                  tf.constant(100, shape=(32)),
+                  tf.constant(100, shape=32),
                   chars,
                   )
 

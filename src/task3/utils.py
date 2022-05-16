@@ -8,22 +8,6 @@ import tensorflow as tf
 from typing import List
 
 
-def pad_label(label: bytes, width: int = 100, pad_char: bytes = b" ") -> bytes:
-    """
-    Pad label of type byte string to width using padding character.
-    Padding is only on the right side.
-
-    :param label: byte string to pad
-    :param width: length of padded label
-    :param pad_char: character used for padding
-    :return: padded byte string
-    """
-    to_pad = width - len(label)
-    if to_pad <= 0:
-        return label
-    return label + pad_char * to_pad
-
-
 def label_encoding(label: bytes, chars: List[str]) -> tf.Tensor:
     """
     Encode characters in a byte string label as int.
@@ -91,7 +75,7 @@ def train_model(model: tf.keras.Sequential,
     """
 
     # for CTC
-    tokens.append("")
+    tokens.append("^")
     # for status bar
     n_samples = dataset.cardinality() - dataset.cardinality() % batch_size
     # input width for CTC loss
@@ -117,13 +101,14 @@ def train_model(model: tf.keras.Sequential,
     for epoch in range(1, n_epochs + 1):
         print(f"Epoch {epoch:>3}/{n_epochs:<3}")
         dataset = unbatched_dataset.batch(batch_size=batch_size, drop_remainder=True)
+
         for step, batch in dataset.enumerate().as_numpy_iterator():
             X_batch, y_batch = batch[0], batch[1]
 
             # get label lengths and encodings for CTC loss
             label_length = tf.constant(list(map(lambda y: len(y), y_batch)))
-            labels = list(map(lambda y: pad_label(y), y_batch))
-            labels = list(map(lambda y: label_encoding(y, tokens), labels))
+            labels = list(map(lambda y: label_encoding(y, tokens), y_batch))
+            labels = tf.keras.preprocessing.sequence.pad_sequences(labels, value=len(tokens) - 1)
             labels = tf.convert_to_tensor(labels)
 
             with tf.GradientTape() as tape:
@@ -132,7 +117,7 @@ def train_model(model: tf.keras.Sequential,
                 y_pred = tf.transpose(y_pred, [1, 0, 2])
 
                 # calculate loss
-                main_loss = tf.nn.ctc_loss(labels, y_pred, label_length, logit_length, logits_time_major=True, blank_index=79)
+                main_loss = tf.nn.ctc_loss(labels, y_pred, label_length, logit_length, blank_index=len(tokens) - 1)
                 loss = tf.add_n([main_loss] + model.losses)
 
             # update weights
@@ -172,10 +157,10 @@ def test_model( model: tf.keras.Sequential,
         else:
             y_pred = model(X, training=False)
         y_pred = tf.transpose(y_pred, [1, 0, 2])
-        outputs = tf.nn.ctc_greedy_decoder(y_pred, seq_lens)
-        for s_samples in outputs[0]:
-            d_samples = tf.sparse.to_dense(s_samples)
-            for sample in d_samples:
-                y_decoded.append(str(label_decoding(sample, tokens)))
+
+        (decoded, _) = tf.nn.ctc_greedy_decoder(y_pred, seq_lens)
+        decoded = tf.sparse.to_dense(decoded[0])
+        for sample in decoded:
+            y_decoded.append(str(label_decoding(sample, tokens)))
 
     return y_decoded
