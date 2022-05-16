@@ -13,7 +13,7 @@ from task3.utils import *
 FORCE_CPU = False
 EPOCHS = 1
 BATCH_SIZE = 32
-LEARNING_RATE = 0.001
+LEARNING_RATE = 0.005
 OPTIMIZER = tf.keras.optimizers.RMSprop(LEARNING_RATE)
 METRICS = []
 
@@ -41,7 +41,21 @@ chars = sorted(list(set(full_text)))
 
 #build and train model
 model = build_LSTM_model(len(chars) + 1)
-train_model(model, train_ds.take(32).batch(32), chars, EPOCHS, OPTIMIZER, METRICS, batch_size=BATCH_SIZE)
-pred = test_model(model, test_ds.take(32).batch(32).map(lambda x, y: x), tf.constant(100, shape=(32)), chars)
+
+train_model(model,
+            train_ds.take(64),
+            chars,
+            EPOCHS,
+            OPTIMIZER,
+            METRICS,
+            batch_size=BATCH_SIZE,
+            )
+
+pred = test_model(model,
+                  test_ds.map(lambda x, y: x).batch(batch_size=32, drop_remainder=True).take(1),
+                  tf.constant(100, shape=(32)),
+                  chars,
+                  )
+
 for p in pred:
     print(p)

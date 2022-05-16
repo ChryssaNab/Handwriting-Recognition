@@ -36,8 +36,9 @@ def build_LSTM_model(n_classes: int, batch_size=32) -> tf.keras.Sequential:
         tf.keras.layers.MaxPool2D(pool_size=(1, 2), padding="same"),
         tf.keras.layers.Lambda(lambda x: tf.squeeze(x)),
         tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(512)),
-        tf.keras.layers.Dense(n_classes * 100, activation='softmax'),
-        tf.keras.layers.Reshape((100, n_classes))
+        tf.keras.layers.Dense(n_classes * 100, activation=None),
+        tf.keras.layers.Reshape((100, n_classes)),
+        tf.keras.layers.Softmax(axis=-1),
     ])
 
     return model

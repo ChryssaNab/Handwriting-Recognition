@@ -10,7 +10,7 @@ from typing import List
 
 def pad_label(label: bytes, width: int = 100, pad_char: bytes = b" ") -> bytes:
     """
-    Pad label of type byte string to width using pading character.
+    Pad label of type byte string to width using padding character.
     Padding is only on the right side.
 
     :param label: byte string to pad
@@ -64,7 +64,7 @@ def print_status_bar(iteration: int, total: int, loss, metrics=None):
     """
     metrics = " - ".join([f"{m.name}: {m.result():.4f}" for m in [loss] + (metrics or [])])
     end = "" if iteration < total else "\n"
-    print(f"\r{iteration:<5}/{total:>5}\t{metrics}", end=end)
+    print(f"\r{iteration:>5}/{total:<5}\t{metrics}", end=end)
 
 
 def train_model(model: tf.keras.Sequential,
@@ -90,35 +90,53 @@ def train_model(model: tf.keras.Sequential,
     :return: training metrics
     """
 
+    # for CTC
+    tokens.append("")
     # for status bar
     n_samples = dataset.cardinality() - dataset.cardinality() % batch_size
     # input width for CTC loss
-    logit_length = tf.constant(model.get_layer(index=0).input.shape[1], shape=(batch_size))
+    # TODO: not sure what logit_length should be
+    #logit_length = tf.constant(model.get_layer(index=-1).input.shape[1], shape=(batch_size))
+    logit_length = tf.constant(100, shape=(batch_size))
     # create new batches for each epoch
     unbatched_dataset = dataset.shuffle(batch_size * 10)
 
+    # TODO: speed up training
+    @tf.function
+    def train_step(x, labels: tf.Tensor, label_length: tf.Tensor):
+        with tf.GradientTape() as tape:
+            logits = model(x, training=True)
+            logits = tf.transpose(logits, [1, 0, 2])
+            loss_value = tf.nn.ctc_loss(labels, logits, label_length, logit_length, logits_time_major=True)
+            loss = tf.add_n([loss_value] + model.losses)
+        grads = tape.gradient(loss_value, model.trainable_weights)
+        optimizer.apply_gradients(zip(grads, model.trainable_weights))
+        mean_loss(loss)
+        return loss_value
+
     for epoch in range(1, n_epochs + 1):
-        print(f"Epoch {epoch:<3} / {n_epochs:>3}")
+        print(f"Epoch {epoch:>3}/{n_epochs:<3}")
         dataset = unbatched_dataset.batch(batch_size=batch_size, drop_remainder=True)
         for step, batch in dataset.enumerate().as_numpy_iterator():
             X_batch, y_batch = batch[0], batch[1]
+
+            # get label lengths and encodings for CTC loss
+            label_length = tf.constant(list(map(lambda y: len(y), y_batch)))
+            labels = list(map(lambda y: pad_label(y), y_batch))
+            labels = list(map(lambda y: label_encoding(y, tokens), labels))
+            labels = tf.convert_to_tensor(labels)
+
             with tf.GradientTape() as tape:
                 # get predictions and transpose to get time major representation
                 y_pred = model(X_batch, training=True)
                 y_pred = tf.transpose(y_pred, [1, 0, 2])
 
-                # get label lengths and encodings for CTC loss
-                label_length = tf.constant(list(map(lambda y: len(y), y_batch)))
-                labels = list(map(lambda y: pad_label(y), y_batch))
-                labels = list(map(lambda y: label_encoding(y, tokens), labels))
-                labels = tf.convert_to_tensor(labels)
-
                 # calculate loss
-                main_loss = tf.nn.ctc_loss(labels, y_pred, label_length, logit_length, logits_time_major=True)
+                main_loss = tf.nn.ctc_loss(labels, y_pred, label_length, logit_length, logits_time_major=True, blank_index=79)
                 loss = tf.add_n([main_loss] + model.losses)
 
             # update weights
-            gradients = tape.gradient(loss, model.trainable_weights)
+            gradients = tape.gradient(main_loss, model.trainable_weights)
             optimizer.apply_gradients(zip(gradients, model.trainable_variables))
             mean_loss(loss)
 
@@ -144,7 +162,6 @@ def test_model( model: tf.keras.Sequential,
                 tokens: List[str],
                 metrics: List[tf.keras.metrics.Metric] = None,
                 mean_loss: tf.keras.metrics.Metric = tf.keras.metrics.Mean(),
-                batch_size: int = 32,
                 ):
 
     y_decoded = list()
