@@ -75,7 +75,7 @@ def train_model(model: tf.keras.Sequential,
     """
 
     # for CTC
-    tokens.append("^")
+    tokens.append("ε")
     # for status bar
     n_samples = dataset.cardinality() - dataset.cardinality() % batch_size
     # T for CTC loss

@@ -14,7 +14,7 @@ from task3.utils import *
 
 # Settings
 EPOCHS = 1
-BATCH_SIZE = 32
+BATCH_SIZE = 16
 LEARNING_RATE = 0.001
 OPTIMIZER = tf.keras.optimizers.RMSprop(LEARNING_RATE)
 METRICS = []
@@ -42,7 +42,7 @@ chars = sorted(list(set(full_text)))
 model = build_LSTM_model(len(chars) + 1)
 
 train_model(model,
-            train_ds.take(64),
+            train_ds.take(256),
             chars,
             EPOCHS,
             OPTIMIZER,
