@@ -78,9 +78,7 @@ def train_model(model: tf.keras.Sequential,
     tokens.append("^")
     # for status bar
     n_samples = dataset.cardinality() - dataset.cardinality() % batch_size
-    # input width for CTC loss
-    # TODO: not sure what logit_length should be
-    #logit_length = tf.constant(model.get_layer(index=-1).input.shape[1], shape=(batch_size))
+    # T for CTC loss
     logit_length = tf.constant(100, shape=(batch_size))
     # create new batches for each epoch
     unbatched_dataset = dataset.shuffle(batch_size * 10)
@@ -106,9 +104,9 @@ def train_model(model: tf.keras.Sequential,
             X_batch, y_batch = batch[0], batch[1]
 
             # get label lengths and encodings for CTC loss
-            label_length = tf.constant(list(map(lambda y: len(y), y_batch)))
+            label_length = tf.constant([len(y) for y in y_batch])
             labels = list(map(lambda y: label_encoding(y, tokens), y_batch))
-            labels = tf.keras.preprocessing.sequence.pad_sequences(labels, value=len(tokens) - 1, padding='post')
+            labels = tf.keras.preprocessing.sequence.pad_sequences(labels, value=0, padding='post')
             labels = tf.convert_to_tensor(labels)
 
             with tf.GradientTape() as tape:
@@ -158,7 +156,7 @@ def test_model( model: tf.keras.Sequential,
             y_pred = model(X, training=False)
         y_pred = tf.transpose(y_pred, [1, 0, 2])
 
-        (decoded, _) = tf.nn.ctc_greedy_decoder(y_pred, seq_lens)
+        (decoded, _) = tf.nn.ctc_beam_search_decoder(y_pred, seq_lens)
         decoded = tf.sparse.to_dense(decoded[0])
         for sample in decoded:
             y_decoded.append(str(label_decoding(sample, tokens)))
