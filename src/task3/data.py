@@ -7,10 +7,9 @@ from typing import Tuple
 from pathlib import Path
 from sklearn.model_selection import train_test_split
 
-
 # Set path to the IAM folder
-#"C:\\Users\\Luca\\Desktop\\HWR"
-local_path_to_iam = "C:\\Users\\muell\\Desktop\\HWR\\Task 3\\Data"
+local_path_to_iam = "C:\\Users\\Luca\\Desktop\\HWR"
+# "C:\\Users\\muell\\Desktop\\HWR\\Task 3\\Data"
 data_dir = Path(local_path_to_iam) / "IAM-data"
 img_dir = data_dir / "img"
 
@@ -69,7 +68,7 @@ def load_dataset(data_dict: dict) -> tf.data.Dataset:
     return dataset
 
 
-def distortion_free_resize(image: tf.Tensor, img_size: Tuple[int, int]) -> tf.Tensor:
+def distortion_free_resize(image: tf.Tensor, img_size: Tuple[int, int], pad_value: int = 255) -> tf.Tensor:
     w, h = img_size
     image = tf.image.resize(image, size=(h, w), preserve_aspect_ratio=True)
 
@@ -99,6 +98,7 @@ def distortion_free_resize(image: tf.Tensor, img_size: Tuple[int, int]) -> tf.Te
             [pad_width_left, pad_width_right],
             [0, 0],
         ],
+        constant_values=pad_value,
     )
 
     image = tf.transpose(image, perm=[1, 0, 2])

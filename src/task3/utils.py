@@ -79,9 +79,9 @@ def train_model(model: tf.keras.Sequential,
     # for status bar
     n_samples = dataset.cardinality() - dataset.cardinality() % batch_size
     # T for CTC loss
-    logit_length = tf.constant(100, shape=(batch_size))
+    logit_length = tf.constant(100, shape=batch_size)
     # create new batches for each epoch
-    unbatched_dataset = dataset.shuffle(batch_size * 10)
+    unbatched_dataset = dataset.shuffle(buffer_size=batch_size * 10, reshuffle_each_iteration=True)
 
     # TODO: speed up training
     @tf.function
@@ -101,7 +101,7 @@ def train_model(model: tf.keras.Sequential,
         dataset = unbatched_dataset.batch(batch_size=batch_size, drop_remainder=True)
 
         for step, batch in dataset.enumerate().as_numpy_iterator():
-            X_batch, y_batch = batch[0], batch[1]
+            (X_batch, y_batch) = batch
 
             # get label lengths and encodings for CTC loss
             label_length = tf.constant([len(y) for y in y_batch])
@@ -139,13 +139,13 @@ def train_model(model: tf.keras.Sequential,
 
 
 # TODO: Finish this function
-def test_model( model: tf.keras.Sequential,
-                X: tf.data.Dataset,
-                seq_lens: tf.Tensor,
-                tokens: List[str],
-                metrics: List[tf.keras.metrics.Metric] = None,
-                mean_loss: tf.keras.metrics.Metric = tf.keras.metrics.Mean(),
-                ):
+def test_model(model: tf.keras.Sequential,
+               X: tf.data.Dataset,
+               seq_lens: tf.Tensor,
+               tokens: List[str],
+               metrics: List[tf.keras.metrics.Metric] = None,
+               mean_loss: tf.keras.metrics.Metric = tf.keras.metrics.Mean(),
+               ):
 
     y_decoded = list()
 

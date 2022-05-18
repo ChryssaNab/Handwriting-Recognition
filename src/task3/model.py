@@ -5,7 +5,7 @@ Model architectures for IAM
 import tensorflow as tf
 
 
-def build_LSTM_model(n_classes: int, batch_size=32) -> tf.keras.Sequential:
+def build_LSTM_model(n_classes: int, batch_size: int) -> tf.keras.Sequential:
     """
     Model architecture adapted from:
     Handwritten Text Recognition in Historical Documents, p.38
@@ -15,7 +15,6 @@ def build_LSTM_model(n_classes: int, batch_size=32) -> tf.keras.Sequential:
     :param batch_size: training batch size
     :return: the model as keras Sequential model
     """
-
 
     model = tf.keras.models.Sequential([
         tf.keras.layers.InputLayer(input_shape=(800, 64, 1), batch_size=batch_size, name="Input"),

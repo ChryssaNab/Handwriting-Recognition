@@ -2,11 +2,10 @@
 Train and test a model on the IAM dataset.
 """
 
-import tensorflow as tf
 import os
-FORCE_CPU = True
-if FORCE_CPU:
-    os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+#os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+
+import tensorflow as tf
 from task3.data import *
 from task3.model import *
 from task3.utils import *
@@ -28,8 +27,8 @@ image_height = 64
 
 # Preprocess data
 dataset = dataset.apply(remove_filenames)
-dataset = dataset.map(lambda x, y: (scale_img(x), y))
 dataset = dataset.map(lambda x, y: (distortion_free_resize(x, img_size=(image_width, image_height)), y))
+dataset = dataset.map(lambda x, y: (scale_img(x), y))
 
 # Split data
 train_ds, test_ds = train_test_split_iam(dataset, train_size=0.8, shuffle=True)
@@ -39,10 +38,10 @@ full_text = "".join(data_dict.values())
 chars = sorted(list(set(full_text)))
 
 # build and train model
-model = build_LSTM_model(len(chars) + 1)
+model = build_LSTM_model(len(chars) + 1, BATCH_SIZE)
 
 train_model(model,
-            train_ds.take(256),
+            train_ds,
             chars,
             EPOCHS,
             OPTIMIZER,
