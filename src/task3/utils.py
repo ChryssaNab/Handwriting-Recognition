@@ -108,7 +108,7 @@ def train_model(model: tf.keras.Sequential,
             # get label lengths and encodings for CTC loss
             label_length = tf.constant(list(map(lambda y: len(y), y_batch)))
             labels = list(map(lambda y: label_encoding(y, tokens), y_batch))
-            labels = tf.keras.preprocessing.sequence.pad_sequences(labels, value=len(tokens) - 1)
+            labels = tf.keras.preprocessing.sequence.pad_sequences(labels, value=len(tokens) - 1, padding='post')
             labels = tf.convert_to_tensor(labels)
 
             with tf.GradientTape() as tape:
