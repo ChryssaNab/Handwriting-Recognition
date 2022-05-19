@@ -33,10 +33,9 @@ def build_LSTM_model(n_classes: int, batch_size: int) -> tf.keras.Sequential:
         tf.keras.layers.BatchNormalization(name="BatchNorm_2"),
         tf.keras.layers.Conv2D(512, 3, padding="same", activation="relu", name="Conv_7"),
         tf.keras.layers.MaxPool2D(pool_size=(1, 2), padding="same", name="MaxPool_6"),
-        tf.keras.layers.Lambda(lambda x: tf.squeeze(x), name="Collapse"),
-        tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(512), name="BiDir_LSTM"),
-        tf.keras.layers.Dense(n_classes * 100, activation=None, name="Output_Dense"),
-        tf.keras.layers.Reshape((100, n_classes), name="Output_Reshape"),
+        tf.keras.layers.Reshape((100, 512), name="Collapse"),
+        tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(512, activation='tanh', return_sequences=True), name="BiDir_LSTM"),
+        tf.keras.layers.Dense(n_classes, activation=None, name="Output_Dense"),
         tf.keras.layers.Softmax(axis=-1, name="Output_Softmax"),
     ])
 
