@@ -68,6 +68,12 @@ def load_dataset(data_dict: dict) -> tf.data.Dataset:
     return dataset
 
 
+def invert_color(image: tf.Tensor) -> tf.Tensor:
+    image = image * tf.constant(-1, dtype=image.dtype)
+    image = tf.add(image, 255)
+    return image
+
+
 def distortion_free_resize(image: tf.Tensor, img_size: Tuple[int, int], pad_value: int = 255) -> tf.Tensor:
     w, h = img_size
     image = tf.image.resize(image, size=(h, w), preserve_aspect_ratio=True)
