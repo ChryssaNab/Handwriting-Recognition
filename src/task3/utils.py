@@ -3,36 +3,42 @@ Custom Training utilities for IAM
 """
 
 # TODO: put functions in proper modules
-
+import matplotlib.pyplot as plt
 import tensorflow as tf
 from typing import List
 
 
-def label_encoding(label: bytes, chars: List[str]) -> tf.Tensor:
+def show_sample(X: tf.Tensor, y: tf.Tensor):
+    plt.imshow(tf.transpose(tf.image.flip_left_right(X), [1, 0, 2]), cmap='Greys')
+    plt.title(y)
+    plt.show()
+
+
+def label_encoding(label: bytes, tokens: List[str]) -> tf.Tensor:
     """
     Encode characters in a byte string label as int.
-    Uses indices in chars for encoding.
+    Uses indices in tokens for encoding.
 
     :param label: byte string to encode
-    :param chars: (sorted) list of unique characters
+    :param tokens: (sorted) list of unique characters
     :return: tensor of type int containing an encoded label
     """
     s_label = label.decode()
-    e_label = [chars.index(c) for c in s_label]
+    e_label = [tokens.index(c) for c in s_label]
     t_label = tf.constant(e_label)
     return t_label
 
 
-def label_decoding(label: tf.Tensor, chars: List[str]) -> str:
+def label_decoding(label: tf.Tensor, tokens: List[str]) -> str:
     """
     Decode a tensor containing an encoded label.
-    Uses int values in label tensor to find characters in chars.
+    Uses int values in label tensor to find characters in tokens.
 
     :param label: tensor of encoded characters
-    :param chars: (sorted) list of unique characters
+    :param tokens: (sorted) list of unique characters
     :return: tf.string tensor containing decoded label
     """
-    e_label = [chars[i] for i in label]
+    e_label = [tokens[i] for i in label]
     s_label = "".join(e_label)
     return str(s_label)
 
@@ -115,11 +121,10 @@ def train_model(model: tf.keras.Sequential,
                 y_pred = tf.transpose(y_pred, [1, 0, 2])
 
                 # calculate loss
-                main_loss = tf.nn.ctc_loss(labels, y_pred, label_length, logit_length, blank_index=len(tokens) - 1)
-                loss = tf.add_n([main_loss] + model.losses)
+                loss = tf.nn.ctc_loss(labels, y_pred, label_length, logit_length, blank_index=len(tokens) - 1)
 
             # update weights
-            gradients = tape.gradient(main_loss, model.trainable_weights)
+            gradients = tape.gradient(loss, model.trainable_weights)
             optimizer.apply_gradients(zip(gradients, model.trainable_variables))
             mean_loss(loss)
 
