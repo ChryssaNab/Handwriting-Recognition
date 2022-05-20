@@ -5,6 +5,7 @@ Custom Training utilities for IAM
 # TODO: put functions in proper modules
 import matplotlib.pyplot as plt
 import tensorflow as tf
+import numpy as np
 from typing import List
 
 
@@ -85,7 +86,7 @@ def train_model(model: tf.keras.Sequential,
     # for status bar
     n_samples = dataset.cardinality() - dataset.cardinality() % batch_size
     # T for CTC loss
-    logit_length = tf.constant(100, shape=batch_size)
+    logit_length = tf.constant(200, shape=batch_size)
     # create new batches for each epoch
     unbatched_dataset = dataset.shuffle(buffer_size=batch_size * 10, reshuffle_each_iteration=True)
 
@@ -112,19 +113,25 @@ def train_model(model: tf.keras.Sequential,
             # get label lengths and encodings for CTC loss
             label_length = tf.constant([len(y) for y in y_batch])
             labels = list(map(lambda y: label_encoding(y, tokens), y_batch))
-            labels = tf.keras.preprocessing.sequence.pad_sequences(labels, value=0, padding='post')
+            labels = tf.keras.preprocessing.sequence.pad_sequences(labels, len(tokens), padding='post')
             labels = tf.convert_to_tensor(labels)
 
+            # TODO: find out why blank probs explode
             with tf.GradientTape() as tape:
                 # get predictions and transpose to get time major representation
                 y_pred = model(X_batch, training=True)
                 y_pred = tf.transpose(y_pred, [1, 0, 2])
+
+                #y = y_pred[80, 0]
+                #print(f"\tmax: {np.argmax(y, axis=-1)}, min: {np.argmin(y, axis=-1)}, shape: {y.shape}")
 
                 # calculate loss
                 loss = tf.nn.ctc_loss(labels, y_pred, label_length, logit_length, blank_index=len(tokens) - 1)
 
             # update weights
             gradients = tape.gradient(loss, model.trainable_weights)
+            #for g in gradients:
+            #    print(f"max: {tf.math.reduce_max(g, axis=-1)}, min: {tf.reduce_min(g, axis=-1)}")
             optimizer.apply_gradients(zip(gradients, model.trainable_variables))
             mean_loss(loss)
 
