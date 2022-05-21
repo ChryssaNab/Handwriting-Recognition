@@ -7,13 +7,13 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 import sys
 import tensorflow as tf
-import matplotlib.pyplot as plt
 
 from pathlib import Path
 
 from task3.data import load_data_dict, load_dataset, train_test_split_iam
-from task3.data import tokens_from_text, full_token_set
+from task3.data import tokens_from_text, get_full_token_set
 from task3.preprocessing import invert_color, distortion_free_resize, scale_img
+from task3.preprocessing import LabelEncoder, LabelPadding
 from task3.model import build_LSTM_model
 from task3.utils import train_model, test_model
 
@@ -23,10 +23,11 @@ from task3.utils import train_model, test_model
 local_path_to_iam = "C:\\Users\\muell\\Desktop\\HWR\\Task 3\\Data"
 
 
-if __name__ == "__main__":
+def main():
+    global local_path_to_iam
+
     if len(sys.argv) > 1:
         local_path_to_iam = str(sys.argv[1])
-        print(sys.argv[1])
 
     data_dir = Path(local_path_to_iam) / "IAM-data"
     img_dir = data_dir / "img"
@@ -50,20 +51,40 @@ if __name__ == "__main__":
     data_dict = load_data_dict(data_dir)
     dataset = load_dataset(data_dict, img_dir)
 
-    # Pre-process data
+    # Get tokens
+    tokens, special = get_full_token_set()
+
+    # longest label
+    max_label_len = max(list(map(len, data_dict.values())))
+
+    # Prepare label encoding & padding
+    label_encoder = LabelEncoder(tokens)
+    label_padding = LabelPadding(pad_value=special.PAD.value, max_len=max_label_len, label_encoder=label_encoder)
+
+    # Pre-process images
     dataset = dataset.map(invert_color)
     dataset = dataset.map(lambda x, y: (distortion_free_resize(x, img_size=(image_width, image_height), pad_value=0), y))
     dataset = dataset.map(scale_img)
 
+    # Pre-process labels
+    dataset = dataset.map(lambda x, y: (x, label_encoder.encode(y)))
+    dataset = dataset.map(lambda x, y: (x, tf.py_function(func=label_padding.add, inp=[y], Tout=tf.int64)))
+
     # Split data
     train_ds, test_ds = train_test_split_iam(dataset, train_size=0.8, shuffle=True)
 
+    for (x, y) in iter(dataset.take(1)):
+        print(y)
+
+    exit()
+
+    # TODO: delete if not needed
     # Create list of unique characters for encoding
     full_text = "".join(data_dict.values())
-    tokens = tokens_from_text(full_text)
+    text_tokens = tokens_from_text(full_text)
 
     # build and train model
-    model = build_LSTM_model(len(tokens) + 1)
+    model = build_LSTM_model(len(tokens))
 
     train_model(model,
                 train_ds,
@@ -82,3 +103,7 @@ if __name__ == "__main__":
 
     for p in pred:
         print(p)
+
+
+if __name__ == "__main__":
+    main()
