@@ -2,7 +2,6 @@
 Custom Training utilities for IAM
 """
 
-# TODO: put functions in proper modules
 import matplotlib.pyplot as plt
 import tensorflow as tf
 import numpy as np
@@ -13,35 +12,6 @@ def show_sample(X: tf.Tensor, y: tf.Tensor):
     plt.imshow(tf.transpose(tf.image.flip_left_right(X), [1, 0, 2]), cmap='Greys')
     plt.title(y)
     plt.show()
-
-
-def label_encoding(label: bytes, tokens: List[str]) -> tf.Tensor:
-    """
-    Encode characters in a byte string label as int.
-    Uses indices in tokens for encoding.
-
-    :param label: byte string to encode
-    :param tokens: (sorted) list of unique characters
-    :return: tensor of type int containing an encoded label
-    """
-    s_label = label.decode()
-    e_label = [tokens.index(c) for c in s_label]
-    t_label = tf.constant(e_label)
-    return t_label
-
-
-def label_decoding(label: tf.Tensor, tokens: List[str]) -> str:
-    """
-    Decode a tensor containing an encoded label.
-    Uses int values in label tensor to find characters in tokens.
-
-    :param label: tensor of encoded characters
-    :param tokens: (sorted) list of unique characters
-    :return: tf.string tensor containing decoded label
-    """
-    e_label = [tokens[i] for i in label]
-    s_label = "".join(e_label)
-    return str(s_label)
 
 
 def print_status_bar(iteration: int, total: int, loss, metrics=None):
