@@ -3,60 +3,82 @@ Train and test a model on the IAM dataset.
 """
 
 import os
-#os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
-import matplotlib.pyplot as plt
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+
+import sys
 import tensorflow as tf
-from task3.data import *
-from task3.model import *
-from task3.utils import *
+import matplotlib.pyplot as plt
+
+from pathlib import Path
+
+from task3.data import load_data_dict, load_dataset, train_test_split_iam
+from task3.data import tokens_from_text, full_token_set
+from task3.preprocessing import invert_color, distortion_free_resize, scale_img
+from task3.model import build_LSTM_model
+from task3.utils import train_model, test_model
 
 
-# Settings
-EPOCHS = 2
-BATCH_SIZE = 24
-LEARNING_RATE = 0.001
-OPTIMIZER = tf.keras.optimizers.RMSprop(LEARNING_RATE, clipvalue=1.0)
-METRICS = []
+# Set path to the IAM folder
+#local_path_to_iam = "C:\\Users\\Luca\\Desktop\\HWR"
+local_path_to_iam = "C:\\Users\\muell\\Desktop\\HWR\\Task 3\\Data"
 
-# Load data
-data_dict = load_data_dict()
-dataset = load_dataset(data_dict)
 
-image_width = 800
-image_height = 64
-image_channels = 1
-input_shape = (image_width, image_height, image_channels)
+if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        local_path_to_iam = str(sys.argv[1])
+        print(sys.argv[1])
 
-# Preprocess data
-dataset = dataset.apply(remove_filenames)
-dataset = dataset.map(lambda x, y: (invert_color(x), y))
-dataset = dataset.map(lambda x, y: (distortion_free_resize(x, img_size=(image_width, image_height), pad_value=0), y))
-dataset = dataset.map(lambda x, y: (scale_img(x), y))
+    data_dir = Path(local_path_to_iam) / "IAM-data"
+    img_dir = data_dir / "img"
+    print(f"IAM Path: {data_dir}")
 
-# Split data
-train_ds, test_ds = train_test_split_iam(dataset, train_size=0.8, shuffle=True)
+    # Settings
+    EPOCHS = 2
+    BATCH_SIZE = 24
+    LEARNING_RATE = 0.001
+    OPTIMIZER = tf.keras.optimizers.RMSprop(LEARNING_RATE, clipvalue=1.0)
+    METRICS = []
+    LOGIT_LEN = 200
 
-# Create list of unique characters for encoding
-full_text = "".join(data_dict.values())
-chars = sorted(list(set(full_text)))
+    # Set input dimensions
+    image_width = 800
+    image_height = 64
+    image_channels = 1
+    input_shape = (image_width, image_height, image_channels)
 
-# build and train model
-model = build_LSTM_model(len(chars) + 1)
+    # Load data
+    data_dict = load_data_dict(data_dir)
+    dataset = load_dataset(data_dict, img_dir)
 
-train_model(model,
-            train_ds,
-            chars,
-            EPOCHS,
-            OPTIMIZER,
-            METRICS,
-            batch_size=BATCH_SIZE,
-            )
+    # Pre-process data
+    dataset = dataset.map(invert_color)
+    dataset = dataset.map(lambda x, y: (distortion_free_resize(x, img_size=(image_width, image_height), pad_value=0), y))
+    dataset = dataset.map(scale_img)
 
-pred = test_model(model,
-                  test_ds.map(lambda x, y: x).batch(batch_size=BATCH_SIZE, drop_remainder=True).take(5),
-                  tf.constant(200, shape=BATCH_SIZE),
-                  chars,
-                  )
+    # Split data
+    train_ds, test_ds = train_test_split_iam(dataset, train_size=0.8, shuffle=True)
 
-for p in pred:
-    print(p)
+    # Create list of unique characters for encoding
+    full_text = "".join(data_dict.values())
+    tokens = tokens_from_text(full_text)
+
+    # build and train model
+    model = build_LSTM_model(len(tokens) + 1)
+
+    train_model(model,
+                train_ds,
+                tokens,
+                EPOCHS,
+                OPTIMIZER,
+                METRICS,
+                batch_size=BATCH_SIZE,
+                )
+
+    pred = test_model(model,
+                      test_ds.map(lambda x, y: x).batch(batch_size=BATCH_SIZE, drop_remainder=True).take(5),
+                      tf.constant(LOGIT_LEN, shape=BATCH_SIZE),
+                      tokens,
+                      )
+
+    for p in pred:
+        print(p)
