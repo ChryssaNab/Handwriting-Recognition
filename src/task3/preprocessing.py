@@ -85,17 +85,36 @@ def remove_filenames(dataset: tf.data.Dataset) -> tf.data.Dataset:
 
 class LabelEncoder:
     def __init__(self, tokens: List[str]):
-        self.token_list = tokens
-        self._lookup = StringLookup(vocabulary=tokens, mask_token=None)
+        self._enc = StringLookup(vocabulary=tokens, mask_token=None)
+        self._dec = StringLookup(vocabulary=tokens, mask_token=None, invert=True)
 
-    def encode(self, label: str, unicode_split: bool = True):
+    def encode(self, label: str, unicode_split: bool = True) -> tf.Tensor:
         if not unicode_split:
-            return self._lookup(label)
-        return self._lookup(tf.strings.unicode_split(label, input_encoding="UTF-8"))
+            return self._enc(label)
+        return self._enc(tf.strings.unicode_split(label, input_encoding="UTF-8"))
+
+    def decode(self, enc_label: tf.Tensor) -> str:
+        label = self._dec(enc_label)
+        label = "".join([c.decode() for c in label.numpy()])
+        return label
 
     def get_vocabulary(self) -> List[str]:
-        return self._lookup.get_vocabulary()
+        return self._enc.get_vocabulary()
 
 
-class LabelDecoder:
-    pass
+class LabelPadding:
+    def __init__(self, pad_value: Union[int, str], max_len: int, label_encoder: LabelEncoder):
+        self.pad_value = pad_value
+        if isinstance(pad_value, str):
+            self.pad_value = label_encoder.encode(pad_value, unicode_split=False)
+        self.max_len = max_len
+        self.label_encoder = label_encoder
+
+    def add(self, label: tf.Tensor) -> tf.Tensor:
+        label = tf.pad(label, paddings=[[0, self.max_len - len(self.label_encoder.decode(label))]],
+                       constant_values=self.pad_value)
+        return label
+
+    # TODO: implement
+    def remove(self, label):
+        raise NotImplementedError
