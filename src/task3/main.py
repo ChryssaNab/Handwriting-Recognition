@@ -10,12 +10,11 @@ import tensorflow as tf
 
 from pathlib import Path
 
-from task3.data import load_data_dict, load_dataset, train_test_split_iam
+from task3.data import load_data_dict, load_dataset, train_test_split_iam, to_dict, from_dict
 from task3.data import tokens_from_text, get_full_token_set
 from task3.preprocessing import invert_color, distortion_free_resize, scale_img
 from task3.preprocessing import LabelEncoder, LabelPadding
 from task3.model import build_LSTM_model
-from task3.utils import train_model, test_model
 
 
 # Set path to the IAM folder
@@ -52,57 +51,46 @@ def main():
     dataset = load_dataset(data_dict, img_dir)
 
     # Get tokens
-    tokens, special = get_full_token_set()
+    full_text = "".join(data_dict.values())
+    tokens = tokens_from_text(full_text)
 
     # longest label
     max_label_len = max(list(map(len, data_dict.values())))
 
     # Prepare label encoding & padding
     label_encoder = LabelEncoder(tokens)
-    label_padding = LabelPadding(pad_value=special.PAD.value, max_len=max_label_len, label_encoder=label_encoder)
+    label_padding = LabelPadding(pad_value=len(tokens), max_len=max_label_len, label_encoder=label_encoder)
 
     # Pre-process images
-    dataset = dataset.map(invert_color)
+    dataset = dataset.map(lambda x, y: (invert_color(x), y))
     dataset = dataset.map(lambda x, y: (distortion_free_resize(x, img_size=(image_width, image_height), pad_value=0), y))
-    dataset = dataset.map(scale_img)
+    dataset = dataset.map(lambda x, y: (scale_img(x), y))
 
     # Pre-process labels
     dataset = dataset.map(lambda x, y: (x, label_encoder.encode(y)))
     dataset = dataset.map(lambda x, y: (x, tf.py_function(func=label_padding.add, inp=[y], Tout=tf.int64)))
 
+    # Change to dict format, prepare for input
+    dataset = dataset.map(to_dict)
+    dataset = dataset.batch(BATCH_SIZE, drop_remainder=True).prefetch(tf.data.AUTOTUNE)
+
     # Split data
     train_ds, test_ds = train_test_split_iam(dataset, train_size=0.8, shuffle=True)
 
-    for (x, y) in iter(dataset.take(1)):
-        print(y)
+    train_model = build_LSTM_model(len(tokens) + 2)
+    train_model.compile(OPTIMIZER)
 
-    exit()
+    model = tf.keras.models.Model(
+        train_model.get_layer(name="Image").input, train_model.get_layer(name="Label").output
+    )
 
-    # TODO: delete if not needed
-    # Create list of unique characters for encoding
-    full_text = "".join(data_dict.values())
-    text_tokens = tokens_from_text(full_text)
+    history = train_model.fit(
+        train_ds.skip(100),
+        validation_data=train_ds.take(100),
+        epochs=EPOCHS,
+    )
 
-    # build and train model
-    model = build_LSTM_model(len(tokens))
-
-    train_model(model,
-                train_ds,
-                tokens,
-                EPOCHS,
-                OPTIMIZER,
-                METRICS,
-                batch_size=BATCH_SIZE,
-                )
-
-    pred = test_model(model,
-                      test_ds.map(lambda x, y: x).batch(batch_size=BATCH_SIZE, drop_remainder=True).take(5),
-                      tf.constant(LOGIT_LEN, shape=BATCH_SIZE),
-                      tokens,
-                      )
-
-    for p in pred:
-        print(p)
+    exit(1)
 
 
 if __name__ == "__main__":

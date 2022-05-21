@@ -1,15 +1,17 @@
+"""
+Pre-processing functions & classes for IAM
+"""
+
 import tensorflow as tf
 from tensorflow.keras.layers.experimental.preprocessing import StringLookup
-from typing import List, Tuple, Optional, Union
+from typing import List, Tuple, Union
 
 
 @tf.function
-def invert_color(image: tf.Tensor, y: Optional[tf.Tensor] = None) -> Union[tf.Tensor, Tuple[tf.Tensor, tf.Tensor]]:
+def invert_color(image: tf.Tensor) -> tf.Tensor:
     image = image * tf.constant(-1, dtype=image.dtype)
     image = tf.add(image, tf.constant(255, dtype=image.dtype))
-    if y is None:
-        return image
-    return image, y
+    return image
 
 
 @tf.function
@@ -64,7 +66,7 @@ def distortion_free_resize(image: tf.Tensor,
 
 
 @tf.function
-def scale_img(image: tf.Tensor, y: Optional[tf.Tensor] = None) -> Union[tf.Tensor, Tuple[tf.Tensor, tf.Tensor]]:
+def scale_img(image: tf.Tensor) -> tf.Tensor:
     """
     Scale image values from [0, 255] to [0.0, 1.0].
 
@@ -72,37 +74,73 @@ def scale_img(image: tf.Tensor, y: Optional[tf.Tensor] = None) -> Union[tf.Tenso
     :param y: optional label (ignored by function)
     :return: scaled image, y if passed as arg
     """
-    if y is None:
-        return tf.cast(image, tf.float32) / 255.
-    return tf.cast(image, tf.float32) / 255., y
+    return tf.cast(image, tf.float32) / 255.
 
 
 def remove_filenames(dataset: tf.data.Dataset) -> tf.data.Dataset:
+    """
+    Remove filenames from dataset. By default the IAM dataset does not
+    contain filenames.
+
+    :param dataset: IAM dataset with (images, filenames, labels)
+    :return: IAM dataset with (images, labels)
+    """
     x = dataset.map(lambda x, f, y: x)
     y = dataset.map(lambda x, f, y: y)
     return tf.data.Dataset.zip((x, y))
 
 
 class LabelEncoder:
+    """
+    Encode labels from string to int and back.
+    """
+
     def __init__(self, tokens: List[str]):
+        """
+
+
+        :param tokens:
+        """
         self._enc = StringLookup(vocabulary=tokens, mask_token=None)
         self._dec = StringLookup(vocabulary=tokens, mask_token=None, invert=True)
 
     def encode(self, label: str, unicode_split: bool = True) -> tf.Tensor:
+        """
+        Convert a string into a tensor with dtype int64.
+
+        :param label: label as string
+        :param unicode_split: tf.strings.unicode_split
+        :return: label as int tensor
+        """
         if not unicode_split:
             return self._enc(label)
         return self._enc(tf.strings.unicode_split(label, input_encoding="UTF-8"))
 
     def decode(self, enc_label: tf.Tensor) -> str:
+        """
+        Decode an encoded label (tensor with dtype int64) back to string.
+
+        :param enc_label: label as int tensor
+        :return: label as string
+        """
         label = self._dec(enc_label)
         label = "".join([c.decode() for c in label.numpy()])
         return label
 
     def get_vocabulary(self) -> List[str]:
+        """
+        Vocabulary is equal to tokens parameter in constructor.
+
+        :return: tokens
+        """
         return self._enc.get_vocabulary()
 
 
 class LabelPadding:
+    """
+    Add padding to encoded label or remove it.
+    """
+
     def __init__(self, pad_value: Union[int, str], max_len: int, label_encoder: LabelEncoder):
         self.pad_value = pad_value
         if isinstance(pad_value, str):

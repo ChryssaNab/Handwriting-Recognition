@@ -1,10 +1,10 @@
 """
-Data loading and processing utilities for IAM
+Data loading utilities for IAM
 """
 
 import tensorflow as tf
 from enum import IntEnum
-from typing import Tuple, List, Optional, Union
+from typing import Tuple, List
 from pathlib import Path
 from sklearn.model_selection import train_test_split
 
@@ -33,7 +33,6 @@ def load_data_dict(data_dir: Path) -> dict:
     return data_dict
 
 
-@tf.function
 def load_dataset(data_dict: dict, img_dir: Path, return_filenames: bool = False) -> tf.data.Dataset:
     """
     Build a tf.data.Dataset from image names and labels.
@@ -49,7 +48,7 @@ def load_dataset(data_dict: dict, img_dir: Path, return_filenames: bool = False)
     raw_files = list(data_dict.keys())
     raw_labels = list(data_dict.values())
 
-    # Labels as datasets
+    # Labels as dataset
     labels = tf.data.Dataset.from_tensor_slices(raw_labels)
 
     # Absolute img paths as dataset
@@ -70,7 +69,6 @@ def load_dataset(data_dict: dict, img_dir: Path, return_filenames: bool = False)
     return dataset
 
 
-@tf.function
 def train_test_split_iam(dataset: tf.data.Dataset,
                          train_size: float = 0.8,
                          shuffle: bool = False,
@@ -95,13 +93,14 @@ def train_test_split_iam(dataset: tf.data.Dataset,
     return train_dataset, test_dataset
 
 
+# TODO: remove deprecated function
 def split_data(i, l):
     x_tr, x_te, y_tr, y_te = train_test_split(i, l, train_size=0.95)
     return x_tr, x_te, y_tr, y_te
 
 
 @tf.function
-def to_dict(x: tf.Tensor, y: tf.Tensor, x_key: str = "image", y_key: str = "label") -> dict:
+def to_dict(x: tf.Tensor, y: tf.Tensor, x_key: str = "Image", y_key: str = "Label") -> dict:
     """
     Combine two tensors into a dict.
 
@@ -144,19 +143,20 @@ def get_full_token_set():
     :return: list of tokens, enum of special tokens
     """
 
+    # TODO: fix enum, use strings
     class SpecialTokens(IntEnum):
-        BLANK = 0
-        PAD = 1
-        SOS = 2
-        EOS = 3
-        UNK = 4
+        BLANK = -1
+        PAD = 0
+        SOS = 1
+        EOS = 2
+        UNK = 3
 
-    tokens = ["[CTCblank]", "<PAD>", "<SOS>", "<EOS>", "<UNK>",
+    tokens = ["<PAD>", "<SOS>", "<EOS>", "<UNK>",
               '!', '"', '#', '$', '%', '&', "'", '(', ')', '*', '+', ',', '-', '.', '/', ':', ';', '<', '=', '>',
               '?', '@', '[', '\\', ']', '^', '_', '`', '{', '|', '}', '~', 'a',  'b', 'c', 'd', 'e', 'f', 'g', 'h',
               'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',  'v', 'w', 'x', 'y', 'z', 'A', 'B',
               'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
-              'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ' ']
+              'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ' ', "[CTCblank]"]
 
     return tokens, SpecialTokens
 
