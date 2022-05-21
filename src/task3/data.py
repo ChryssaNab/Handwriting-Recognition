@@ -3,18 +3,12 @@ Data loading and processing utilities for IAM
 """
 
 import tensorflow as tf
-from typing import Tuple
+from typing import Tuple, List, Optional, Union
 from pathlib import Path
 from sklearn.model_selection import train_test_split
 
-# Set path to the IAM folder
-local_path_to_iam = "C:\\Users\\Luca\\Desktop\\HWR"
-# "C:\\Users\\muell\\Desktop\\HWR\\Task 3\\Data"
-data_dir = Path(local_path_to_iam) / "IAM-data"
-img_dir = data_dir / "img"
 
-
-def load_data_dict(data_dir: Path = data_dir) -> dict:
+def load_data_dict(data_dir: Path) -> dict:
     """
     Returns dictionary with filenames as keys and labels as values.
 
@@ -38,21 +32,23 @@ def load_data_dict(data_dir: Path = data_dir) -> dict:
     return data_dict
 
 
-def load_dataset(data_dict: dict) -> tf.data.Dataset:
+@tf.function
+def load_dataset(data_dict: dict, img_dir: Path, return_filenames: bool = False) -> tf.data.Dataset:
     """
     Build a tf.data.Dataset from image names and labels.
     Data is not preprocessed.
 
     :param data_dict: dict {filename: label}
-    :return: tf.data.Dataset (image, filename, label)
+    :param img_dir: path to IAM images
+    :param return_filenames: if 'True' return tf.data.Dataset (image, filename, label)
+    :return: tf.data.Dataset (image, label)
     """
 
     # List of filenames & labels as strings
     raw_files = list(data_dict.keys())
     raw_labels = list(data_dict.values())
 
-    # Filenames & labels as datasets
-    files = tf.data.Dataset.from_tensor_slices(raw_files)
+    # Labels as datasets
     labels = tf.data.Dataset.from_tensor_slices(raw_labels)
 
     # Absolute img paths as dataset
@@ -62,78 +58,38 @@ def load_dataset(data_dict: dict) -> tf.data.Dataset:
     images = images.map(lambda x: tf.io.read_file(x))
     images = images.map(lambda x: tf.io.decode_png(x))
 
+    if not return_filenames:
+        dataset = tf.data.Dataset.zip((images, labels))
+        return dataset
+
     # Combine images, filenames and labels
+    files = tf.data.Dataset.from_tensor_slices(raw_files)
     dataset = tf.data.Dataset.zip((images, files, labels))
 
     return dataset
 
 
-def invert_color(image: tf.Tensor) -> tf.Tensor:
-    image = image * tf.constant(-1, dtype=image.dtype)
-    image = tf.add(image, 255)
-    return image
 
 
-def distortion_free_resize(image: tf.Tensor, img_size: Tuple[int, int], pad_value: int = 255) -> tf.Tensor:
-    w, h = img_size
-    image = tf.image.resize(image, size=(h, w), preserve_aspect_ratio=True)
 
-    # Check the amount of padding needed to be done.
-    pad_height = h - tf.shape(image)[0]
-    pad_width = w - tf.shape(image)[1]
-
-    # Only necessary if you want to do same amount of padding on both sides.
-    if pad_height % 2 != 0:
-        height = pad_height // 2
-        pad_height_top = height + 1
-        pad_height_bottom = height
-    else:
-        pad_height_top = pad_height_bottom = pad_height // 2
-
-    if pad_width % 2 != 0:
-        width = pad_width // 2
-        pad_width_left = width + 1
-        pad_width_right = width
-    else:
-        pad_width_left = pad_width_right = pad_width // 2
-
-    image = tf.pad(
-        image,
-        paddings=[
-            [pad_height_top, pad_height_bottom],
-            [pad_width_left, pad_width_right],
-            [0, 0],
-        ],
-        constant_values=pad_value,
-    )
-
-    image = tf.transpose(image, perm=[1, 0, 2])
-    image = tf.image.flip_left_right(image)
-    return image
-
-
-def scale_img(image: tf.Tensor) -> tf.Tensor:
-    return tf.cast(image, tf.float32) / 255.
-
-
-def preprocess(image: tf.Tensor) -> tf.Tensor:
-    return tf.keras.applications.mobilenet.preprocess_input(tf.cast(image, tf.float32))
-
-
-def remove_filenames(dataset: tf.data.Dataset) -> tf.data.Dataset:
-    x = dataset.map(lambda x, f, y: x)
-    y = dataset.map(lambda x, f, y: y)
-    return tf.data.Dataset.zip((x, y))
-
-
+@tf.function
 def train_test_split_iam(dataset: tf.data.Dataset,
-                         train_size=0.8,
-                         shuffle=False,
+                         train_size: float = 0.8,
+                         shuffle: bool = False,
                          ) -> Tuple[tf.data.Dataset, tf.data.Dataset]:
-    assert 0.0 < train_size < 1.0, f"Parameter train_size not a float in range (0, 1): {train_size}"
-    ds_size = int(dataset.cardinality())
-    test_size = 1.0 - train_size
-    n_test_samples = int(ds_size * test_size)
+    """
+    Split IAM dataset into separate train and test sets.
+
+    :param dataset: full IAM dataset
+    :param train_size: float (0.0, 1.0) determining test split
+    :param shuffle: if 'True' shuffle dataset before split
+    :return:
+    """
+
+    assert 0.0 < train_size < 1.0, f"Expected train_size to be a float in range (0, 1), got {train_size} instead."
+    ds_size = dataset.cardinality()
+    test_size = tf.constant(1.0 - train_size, dtype=tf.float32)
+    n_test_samples = tf.cast(test_size * tf.cast(ds_size, dtype=tf.float32), dtype=ds_size.dtype)
     if shuffle:
         dataset.shuffle(dataset.cardinality())
     test_dataset = dataset.take(n_test_samples)
@@ -146,45 +102,43 @@ def split_data(i, l):
     return x_tr, x_te, y_tr, y_te
 
 
-def test(image_width: int, image_height: int):
-    data_dict = load_data_dict()
-    dataset = load_dataset(data_dict)
-
-    # preprocessing example
-    # preprocessing using inbuilt function
-    dataset = dataset.map(lambda x, f, y: (preprocess(x), f, y))
-    # padding
-    dataset = dataset.map(lambda x, f, y: (distortion_free_resize(x, img_size=(image_width, image_height)), f, y))
-    dataset = dataset.apply(remove_filenames)
-
-    it = (dataset.as_numpy_iterator())
-    for i, e in enumerate(it):
-        #print(e)
-        pass
-        if i > 3:
-            break
-
-    return dataset
+@tf.function
+def to_dict(x: tf.Tensor, y: tf.Tensor, x_key: str = "image", y_key: str = "label") -> dict:
+    return {x_key: x, y_key: y}
 
 
-if __name__ == "__main__":
+@tf.function
+def from_dict(d: dict, x_key: str = "image", y_key: str = "label") -> Tuple[tf.Tensor, tf.Tensor]:
+    return d[x_key], d[y_key]
 
-    image_width = 512
-    image_height = 64
-    #data = test(image_width, image_height)
-    data = test(image_width, image_height)
-    images, labels = zip(*data)
-    x_train, x_test, y_train, y_test = split_data(images, labels)
 
-    print(len(x_train))
-    print(len(y_train))
-    print(len(x_test))
-    print(len(y_test))
+def tokens_from_text(text: str) -> List[str]:
+    """
+    Extract unique characters from a string and return them as a sorted list.
 
-    import matplotlib.pyplot as plt
-    it = data.as_numpy_iterator()
-    for d in it:
-        plt.imshow(d[0])
-        plt.title(d[1])
-        plt.show()
-        #print(d[0].shape)
+    :param text: string containing tokens
+    :return: sorted list of unique tokens
+    """
+    return sorted(list(set(text)))
+
+
+def full_token_set() -> List[str]:
+    """
+    Get a token set with special characters for label encoding.
+
+    :return: list of tokens
+    """
+
+    BLANK = "[CTCblank]"
+    PAD = "<PAD>"
+    SOS = "<SOS>"
+    EOS = "<EOS>"
+    UNK = "<UNK>"
+
+    tokens = [BLANK, PAD, SOS, EOS, UNK, '!', '"', '#', '$', '%', '&', "'", '(', ')', '*', '+', ',', '-', '.',
+              '/', ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', '^', '_', '`', '{', '|', '}', '~', 'a',  'b',
+              'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',  'v',
+              'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+              'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ' ']
+
+    return tokens
