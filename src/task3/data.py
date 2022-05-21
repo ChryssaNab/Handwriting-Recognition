@@ -3,6 +3,7 @@ Data loading and processing utilities for IAM
 """
 
 import tensorflow as tf
+from enum import IntEnum
 from typing import Tuple, List, Optional, Union
 from pathlib import Path
 from sklearn.model_selection import train_test_split
@@ -69,9 +70,6 @@ def load_dataset(data_dict: dict, img_dir: Path, return_filenames: bool = False)
     return dataset
 
 
-
-
-
 @tf.function
 def train_test_split_iam(dataset: tf.data.Dataset,
                          train_size: float = 0.8,
@@ -104,11 +102,28 @@ def split_data(i, l):
 
 @tf.function
 def to_dict(x: tf.Tensor, y: tf.Tensor, x_key: str = "image", y_key: str = "label") -> dict:
+    """
+    Combine two tensors into a dict.
+
+    :param x: x tensor
+    :param y: y tensor
+    :param x_key: name of x category
+    :param y_key: name of y category
+    :return: dict {x_key: x, y_key: y}
+    """
     return {x_key: x, y_key: y}
 
 
 @tf.function
 def from_dict(d: dict, x_key: str = "image", y_key: str = "label") -> Tuple[tf.Tensor, tf.Tensor]:
+    """
+    Undo to_dict by extracting two tensors from dict.
+
+    :param d: dict with (at least) two tensors
+    :param x_key: name of x category
+    :param y_key: name of y category
+    :return: tuple (x, y)
+    """
     return d[x_key], d[y_key]
 
 
@@ -122,23 +137,26 @@ def tokens_from_text(text: str) -> List[str]:
     return sorted(list(set(text)))
 
 
-def full_token_set() -> List[str]:
+def get_full_token_set():
     """
-    Get a token set with special characters for label encoding.
+    Get a token set with all common characters.
 
-    :return: list of tokens
+    :return: list of tokens, enum of special tokens
     """
 
-    BLANK = "[CTCblank]"
-    PAD = "<PAD>"
-    SOS = "<SOS>"
-    EOS = "<EOS>"
-    UNK = "<UNK>"
+    class SpecialTokens(IntEnum):
+        BLANK = 0
+        PAD = 1
+        SOS = 2
+        EOS = 3
+        UNK = 4
 
-    tokens = [BLANK, PAD, SOS, EOS, UNK, '!', '"', '#', '$', '%', '&', "'", '(', ')', '*', '+', ',', '-', '.',
-              '/', ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', '^', '_', '`', '{', '|', '}', '~', 'a',  'b',
-              'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',  'v',
-              'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
-              'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ' ']
+    tokens = ["[CTCblank]", "<PAD>", "<SOS>", "<EOS>", "<UNK>",
+              '!', '"', '#', '$', '%', '&', "'", '(', ')', '*', '+', ',', '-', '.', '/', ':', ';', '<', '=', '>',
+              '?', '@', '[', '\\', ']', '^', '_', '`', '{', '|', '}', '~', 'a',  'b', 'c', 'd', 'e', 'f', 'g', 'h',
+              'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',  'v', 'w', 'x', 'y', 'z', 'A', 'B',
+              'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
+              'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ' ']
 
-    return tokens
+    return tokens, SpecialTokens
+
