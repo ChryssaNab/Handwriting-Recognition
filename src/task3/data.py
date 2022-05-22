@@ -140,23 +140,21 @@ def get_full_token_set():
     """
     Get a token set with all common characters.
 
-    :return: list of tokens, enum of special tokens
+    :return: list of tokens, class of special tokens
     """
 
-    # TODO: fix enum, use strings
-    class SpecialTokens(IntEnum):
-        BLANK = -1
-        PAD = 0
-        SOS = 1
-        EOS = 2
-        UNK = 3
+    class SpecialTokens:
+        BLANK = "[CTCblank]"
+        PAD = "<PAD>"
+        SOS = "<SOS>"
+        EOS = "<EOS>"
+        UNK = "<UNK>"
 
-    tokens = ["<PAD>", "<SOS>", "<EOS>", "<UNK>",
+    tokens = [SpecialTokens.PAD, SpecialTokens.SOS, SpecialTokens.EOS, SpecialTokens.UNK,
               '!', '"', '#', '$', '%', '&', "'", '(', ')', '*', '+', ',', '-', '.', '/', ':', ';', '<', '=', '>',
               '?', '@', '[', '\\', ']', '^', '_', '`', '{', '|', '}', '~', 'a',  'b', 'c', 'd', 'e', 'f', 'g', 'h',
               'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',  'v', 'w', 'x', 'y', 'z', 'A', 'B',
               'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
-              'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ' ', "[CTCblank]"]
+              'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ' ', SpecialTokens.BLANK]
 
     return tokens, SpecialTokens
-
