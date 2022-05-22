@@ -3,21 +3,28 @@ Model architectures for IAM
 """
 
 import tensorflow as tf
+from typing import Tuple, List
 
 
-# TODO: add CTCDecodingLayer
-
-class CTCLayer(tf.keras.layers.Layer):
+class CTCLossLayer(tf.keras.layers.Layer):
     """
     CTC loss as layer based on keras documentation:
     https://keras.io/examples/audio/ctc_asr/
     """
 
-    def __init__(self, name=None):
-        super().__init__(name=name)
+    def __init__(self, name: str = "CTC_Loss", **kwargs):
+        super().__init__(name=name, trainable=False, **kwargs)
         self.loss_fn = tf.keras.backend.ctc_batch_cost
 
-    def call(self, y_true, y_pred):
+    def call(self, X: Tuple[tf.Tensor, tf.Tensor]) -> tf.Tensor:
+        """
+        Compute CTC loss from label and model output.
+
+        :param X: tuple (label, model output)
+        :return:
+        """
+
+        y_true, y_pred = X
         batch_length = tf.cast(tf.shape(y_true)[0], dtype="int64")
         input_length = tf.cast(tf.shape(y_pred)[1], dtype="int64")
         label_length = tf.cast(tf.shape(y_true)[1], dtype="int64")
@@ -30,11 +37,40 @@ class CTCLayer(tf.keras.layers.Layer):
         return y_pred
 
 
+class CTCDecodingLayer(tf.keras.layers.Layer):
+    """
+    CTC decoder as layer:
+    https://docs.w3cub.com/tensorflow~python/tf/keras/backend/ctc_decode.html
+    """
+
+    def __init__(self, name: str = "CTC_Decoding", **kwargs):
+        super().__init__(name=name, trainable=False, **kwargs)
+        self.decode_fn = tf.keras.backend.ctc_decode
+
+    def call(self, y_pred: tf.Tensor) -> List[List[int]]:
+        """
+        Decode the input with a CTC decoder.
+
+        :param y_pred: model output (batch_size, logits, n_chars)
+        :return: tensor with decoded predictions
+        """
+
+        batch_length = tf.cast(tf.shape(y_pred)[0], dtype="int64")
+        input_length = tf.cast(tf.shape(y_pred)[1], dtype="int64")
+        input_length = input_length * tf.ones(shape=(batch_length), dtype="int64")
+
+        output = self.decode_fn(y_pred, input_length, greedy=True, beam_width=100, top_paths=1)
+        return output[0][0]
+
+
 def build_LSTM_model(n_classes: int, width: int = 800) -> tf.keras.Model:
     """
     Model architecture adapted from:
     Handwritten Text Recognition in Historical Documents, p.38
     https://web.archive.org/web/20210814184909id_/https://repositum.tuwien.at/bitstream/20.500.12708/5409/2/Scheidl%20Harald%20-%202018%20-%20Handwritten%20text%20recognition%20in%20historical%20documents.pdf
+
+    Uses n_classes + 2 outputs:
+    https://git.io/J0eXP
 
     :param n_classes: number of classes to predict (i.e. number of characters), n_classes < 100
     :param width: width of input image
@@ -68,9 +104,10 @@ def build_LSTM_model(n_classes: int, width: int = 800) -> tf.keras.Model:
     flat = tf.keras.layers.Reshape((logit_length, 512), name="Collapse")(conv)
     lstm = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(512, activation='tanh', return_sequences=True),
                                          name="BiDir_LSTM")(flat)
-    lstm = tf.keras.layers.Dense(n_classes, activation=None, name="Output_Dense")(lstm)
+    lstm = tf.keras.layers.Dense(n_classes + 2, activation=None, name="Output_Dense")(lstm)
     softmax = tf.keras.layers.Softmax(axis=-1, name="Output_Softmax")(lstm)
-    output = CTCLayer(name="CTC_Loss")(input_label, softmax)
+    output = CTCLossLayer(name="CTC_Loss")((input_label, softmax))
+    output = CTCDecodingLayer(name="CTC_Decoding")(output)
 
     model = tf.keras.models.Model(inputs=[input_img, input_label], outputs=output, name="LSTM_model")
 
