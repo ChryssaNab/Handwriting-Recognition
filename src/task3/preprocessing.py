@@ -9,6 +9,12 @@ from typing import List, Tuple, Union
 
 @tf.function
 def invert_color(image: tf.Tensor) -> tf.Tensor:
+    """
+    Invert colors in range [0, 255].
+
+    :param image: image as tensor
+    :return: image with inverted colors
+    """
     image = image * tf.constant(-1, dtype=image.dtype)
     image = tf.add(image, tf.constant(255, dtype=image.dtype))
     return image
@@ -97,9 +103,9 @@ class LabelEncoder:
 
     def __init__(self, tokens: List[str]):
         """
+        Create encoder with tokens as vocabulary.
 
-
-        :param tokens:
+        :param tokens: vocabulary for encoding & decoding
         """
         self._enc = StringLookup(vocabulary=tokens, mask_token=None)
         self._dec = StringLookup(vocabulary=tokens, mask_token=None, invert=True)
@@ -142,6 +148,13 @@ class LabelPadding:
     """
 
     def __init__(self, pad_value: Union[int, str], max_len: int, label_encoder: LabelEncoder):
+        """
+        Create padding class. Pads encoded labels to max_len with pad_value.
+
+        :param pad_value: padding token
+        :param max_len: length of padded labels
+        :param label_encoder: encoder that encoded labels
+        """
         self.pad_value = pad_value
         if isinstance(pad_value, str):
             self.pad_value = label_encoder.encode(pad_value, unicode_split=False)
@@ -149,6 +162,12 @@ class LabelPadding:
         self.label_encoder = label_encoder
 
     def add(self, label: tf.Tensor) -> tf.Tensor:
+        """
+        Add padding to an encoded label.
+
+        :param label: label as int tensor
+        :return: padded label as int tensor
+        """
         label = tf.pad(label, paddings=[[0, self.max_len - len(self.label_encoder.decode(label))]],
                        constant_values=self.pad_value)
         return label
