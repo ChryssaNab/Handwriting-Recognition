@@ -2,8 +2,8 @@
 Train and test a model on the IAM dataset.
 """
 
-#import os
-#os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 import sys
 import tensorflow as tf
@@ -14,12 +14,12 @@ from task3.data import load_data_dict, load_dataset, train_test_split_iam, to_di
 from task3.data import tokens_from_text, get_full_token_set
 from task3.preprocessing import invert_color, distortion_free_resize, scale_img
 from task3.preprocessing import LabelEncoder, LabelPadding
-from task3.model import build_LSTM_model
+from task3.model import build_LSTM_model, CTCDecodingLayer
 
 
 # Set path to the IAM folder
-local_path_to_iam = "C:\\Users\\Luca\\Desktop\\HWR"
-#local_path_to_iam = "C:\\Users\\muell\\Desktop\\HWR\\Task 3\\Data"
+#local_path_to_iam = "C:\\Users\\Luca\\Desktop\\HWR"
+local_path_to_iam = "C:\\Users\\muell\\Desktop\\HWR\\Task 3\\Data"
 
 
 def main():
@@ -80,13 +80,20 @@ def main():
     train_model = build_LSTM_model(len(tokens) + 2, image_width)
     train_model.compile(OPTIMIZER)
 
-    model = tf.keras.models.Model(
-        train_model.get_layer(name="Image").input, train_model.get_layer(name="Label").output
+    final_model = tf.keras.models.Model(
+        train_model.get_layer(name="Image").input, train_model.get_layer(name="Output_Softmax").output
     )
 
     print(train_model.summary())
 
     history = train_model.fit(train_ds.skip(100), validation_data=train_ds.take(100), epochs=EPOCHS)
+
+    y_pred = train_model.predict(test_ds.take(1))
+    y_pred = tf.convert_to_tensor(y_pred, dtype=tf.int64)
+    for output in y_pred:
+        out = tf.gather(output, tf.where(tf.math.not_equal(output, -1)))
+        out = tf.strings.reduce_join(label_encoder.decode(out)).numpy().decode('UTF-8')
+        print(out)
 
 
 if __name__ == "__main__":
