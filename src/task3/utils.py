@@ -1,5 +1,5 @@
 """
-Custom Training utilities for IAM
+Utilities for IAM
 """
 
 import matplotlib.pyplot as plt

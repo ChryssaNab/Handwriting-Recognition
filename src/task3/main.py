@@ -2,8 +2,8 @@
 Train and test a model on the IAM dataset.
 """
 
-import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+#import os
+#os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 import sys
 import tensorflow as tf
@@ -18,8 +18,8 @@ from task3.model import build_LSTM_model
 
 
 # Set path to the IAM folder
-#local_path_to_iam = "C:\\Users\\Luca\\Desktop\\HWR"
-local_path_to_iam = "C:\\Users\\muell\\Desktop\\HWR\\Task 3\\Data"
+local_path_to_iam = "C:\\Users\\Luca\\Desktop\\HWR"
+#local_path_to_iam = "C:\\Users\\muell\\Desktop\\HWR\\Task 3\\Data"
 
 
 def main():
@@ -33,12 +33,11 @@ def main():
     print(f"IAM Path: {data_dir}")
 
     # Settings
-    EPOCHS = 2
+    EPOCHS = 10
     BATCH_SIZE = 24
     LEARNING_RATE = 0.001
-    OPTIMIZER = tf.keras.optimizers.RMSprop(LEARNING_RATE, clipvalue=1.0)
+    OPTIMIZER = tf.keras.optimizers.RMSprop(LEARNING_RATE)
     METRICS = []
-    LOGIT_LEN = 200
 
     # Set input dimensions
     image_width = 800
@@ -63,7 +62,8 @@ def main():
 
     # Pre-process images
     dataset = dataset.map(lambda x, y: (invert_color(x), y))
-    dataset = dataset.map(lambda x, y: (distortion_free_resize(x, img_size=(image_width, image_height), pad_value=0), y))
+    dataset = dataset.map(lambda x, y: (distortion_free_resize(x, img_size=(image_width, image_height),
+                                                               pad_value=0), y))
     dataset = dataset.map(lambda x, y: (scale_img(x), y))
 
     # Pre-process labels
@@ -72,25 +72,21 @@ def main():
 
     # Change to dict format, prepare for input
     dataset = dataset.map(to_dict)
-    dataset = dataset.batch(BATCH_SIZE, drop_remainder=True).prefetch(tf.data.AUTOTUNE)
+    dataset = dataset.batch(BATCH_SIZE, drop_remainder=True)
 
     # Split data
     train_ds, test_ds = train_test_split_iam(dataset, train_size=0.8, shuffle=True)
 
-    train_model = build_LSTM_model(len(tokens) + 2)
+    train_model = build_LSTM_model(len(tokens) + 2, image_width)
     train_model.compile(OPTIMIZER)
 
     model = tf.keras.models.Model(
         train_model.get_layer(name="Image").input, train_model.get_layer(name="Label").output
     )
 
-    history = train_model.fit(
-        train_ds.skip(100),
-        validation_data=train_ds.take(100),
-        epochs=EPOCHS,
-    )
+    print(train_model.summary())
 
-    exit(1)
+    history = train_model.fit(train_ds.skip(100), validation_data=train_ds.take(100), epochs=EPOCHS)
 
 
 if __name__ == "__main__":

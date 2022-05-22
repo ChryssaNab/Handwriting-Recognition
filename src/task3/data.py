@@ -3,7 +3,6 @@ Data loading utilities for IAM
 """
 
 import tensorflow as tf
-from enum import IntEnum
 from typing import Tuple, List
 from pathlib import Path
 from sklearn.model_selection import train_test_split

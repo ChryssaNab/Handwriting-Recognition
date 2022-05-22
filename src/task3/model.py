@@ -5,7 +5,14 @@ Model architectures for IAM
 import tensorflow as tf
 
 
+# TODO: add CTCDecodingLayer
+
 class CTCLayer(tf.keras.layers.Layer):
+    """
+    CTC loss as layer based on keras documentation:
+    https://keras.io/examples/audio/ctc_asr/
+    """
+
     def __init__(self, name=None):
         super().__init__(name=name)
         self.loss_fn = tf.keras.backend.ctc_batch_cost
