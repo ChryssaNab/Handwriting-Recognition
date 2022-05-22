@@ -125,11 +125,15 @@ class LabelEncoder:
     def decode(self, enc_label: tf.Tensor) -> str:
         """
         Decode an encoded label (tensor with dtype int64) back to string.
+        If the shape has more than one dimension, squeeze the label.
 
         :param enc_label: label as int tensor
         :return: label as string
         """
         label = self._dec(enc_label)
+        print(label.shape)
+        if len(label.shape) > 1:
+            label = tf.squeeze(label)
         label = "".join([c.decode() for c in label.numpy()])
         return label
 
