@@ -9,7 +9,7 @@ import sys
 import tensorflow as tf
 
 from pathlib import Path
-from jiwer import wer
+from jiwer import wer, cer
 
 from task3.data import load_data_dict, load_dataset, train_test_split, to_dict, from_dict
 from task3.data import tokens_from_text, get_full_token_set
@@ -17,6 +17,7 @@ from task3.preprocessing import invert_color, distortion_free_resize, scale_img
 from task3.preprocessing import LabelEncoder, LabelPadding
 from task3.model import build_LSTM_model, build_model
 from task3.metrics import ErrorRateCallback
+from task3.utils import make_dirs
 
 
 # Set path to the IAM folder
@@ -27,25 +28,27 @@ local_path_to_iam = "C:\\Users\\muell\\Desktop\\HWR\\Task 3\\Data"
 def main():
     global local_path_to_iam
 
+    # IAM path from cmd line
     if len(sys.argv) > 1:
         local_path_to_iam = str(sys.argv[1])
 
+    # IAM data
     data_dir = Path(local_path_to_iam) / "IAM-data"
     img_dir = data_dir / "img"
-    print(f"IAM Path: {data_dir}")
+
+    # Create paths for logs, models, checkpoints
+    root_dir = Path(".") / "iam_results"
+    paths = make_dirs(root_dir)
 
     # Settings
     EPOCHS = 1
     BATCH_SIZE = 24
     LEARNING_RATE = 0.001
     OPTIMIZER = tf.keras.optimizers.RMSprop(LEARNING_RATE)
-    METRICS = []
 
     # Set input dimensions
     image_width = 800
     image_height = 64
-    image_channels = 1
-    input_shape = (image_width, image_height, image_channels)
 
     # Load data
     data_dict = load_data_dict(data_dir)
@@ -81,25 +84,33 @@ def main():
     # Split data
     train_ds, test_ds = train_test_split(dataset, train_size=0.8, shuffle=True)
 
+    # Model for training
     train_model = build_LSTM_model(len(tokens), image_width)
-
     train_model.compile(optimizer=OPTIMIZER)
+    print(train_model.summary())
 
+    # Remove loss layer after training
     softmax = train_model.get_layer(name="Output_Softmax").output
     output = train_model.get_layer(name="CTC_Decoding")(softmax)
     final_model = tf.keras.models.Model(
         inputs=train_model.get_layer(name="Image").input, outputs=output, name="LSTM_model_trained"
     )
 
-    print(train_model.summary())
-    err_callback = ErrorRateCallback(train_model, train_ds.take(10), label_encoder, label_padding)
+    # Callbacks
+    error_cb = ErrorRateCallback(train_model, train_ds.take(10), label_encoder, label_padding)
+    tensorboard_cb = tf.keras.callbacks.TensorBoard(log_dir=paths.logs)
+    checkpoint_cb = tf.keras.callbacks.ModelCheckpoint(paths.checkpoint / "checkpoint.h5")
+    early_stopping_cb = tf.keras.callbacks.EarlyStopping(patience=10, restore_best_weights=True)
+    callbacks = [error_cb, tensorboard_cb, checkpoint_cb, early_stopping_cb]
 
+    # Train
     history = train_model.fit(train_ds.skip(100).take(1),
                               validation_data=train_ds.take(1),
                               epochs=EPOCHS,
-                              callbacks=[err_callback]
+                              callbacks=callbacks,
                               )
 
+    # Test
     batch = train_ds.take(1)
     y_pred = final_model.predict(batch)
     y_pred = tf.convert_to_tensor(y_pred, dtype=tf.int64)
@@ -113,7 +124,12 @@ def main():
         output = label_encoder.decode(output)
         print(f"y_pred: {output}")
         wer_score = wer(y_true, output)
+        cer_score = cer(y_true, output)
         print(f"wer: {wer_score}")
+        print(f"cer: {cer_score}")
+
+    # Save model
+    final_model.save(paths.model / "model.h5")
 
 
 if __name__ == "__main__":
