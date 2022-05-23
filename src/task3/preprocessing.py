@@ -132,7 +132,7 @@ class LabelEncoder:
         """
         label = self._dec(enc_label)
         label = tf.cond(tf.rank(label) > tf.constant(1), lambda: tf.squeeze(label), lambda: label)
-        label = "".join([c.decode() for c in label.numpy()])
+        label = "".join([bytes(c).decode() for c in label.numpy()])
         return label
 
     def get_vocabulary(self) -> List[str]:
