@@ -5,7 +5,6 @@ Data loading utilities for IAM
 import tensorflow as tf
 from typing import Tuple, List
 from pathlib import Path
-from sklearn.model_selection import train_test_split
 
 
 def load_data_dict(data_dir: Path) -> dict:
@@ -68,10 +67,10 @@ def load_dataset(data_dict: dict, img_dir: Path, return_filenames: bool = False)
     return dataset
 
 
-def train_test_split_iam(dataset: tf.data.Dataset,
-                         train_size: float = 0.8,
-                         shuffle: bool = False,
-                         ) -> Tuple[tf.data.Dataset, tf.data.Dataset]:
+def train_test_split(dataset: tf.data.Dataset,
+                     train_size: float = 0.8,
+                     shuffle: bool = False,
+                     ) -> Tuple[tf.data.Dataset, tf.data.Dataset]:
     """
     Split IAM dataset into separate train and test sets.
 
@@ -90,12 +89,6 @@ def train_test_split_iam(dataset: tf.data.Dataset,
     test_dataset = dataset.take(n_test_samples)
     train_dataset = dataset.skip(n_test_samples)
     return train_dataset, test_dataset
-
-
-# TODO: remove deprecated function
-def split_data(i, l):
-    x_tr, x_te, y_tr, y_te = train_test_split(i, l, train_size=0.95)
-    return x_tr, x_te, y_tr, y_te
 
 
 @tf.function
