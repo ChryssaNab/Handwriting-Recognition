@@ -91,6 +91,11 @@ def train_test_split(dataset: tf.data.Dataset,
     return train_dataset, test_dataset
 
 
+# TODO: implement
+def filter_labels(sample, *args):
+    raise NotImplementedError
+
+
 @tf.function
 def to_dict(x: tf.Tensor, y: tf.Tensor, x_key: str = "Image", y_key: str = "Label") -> dict:
     """

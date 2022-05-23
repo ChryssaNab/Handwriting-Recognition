@@ -15,7 +15,7 @@ def show_sample(X: tf.Tensor, y: tf.Tensor):
     plt.show()
 
 
-def make_dirs(root_dir: Path):
+def make_dirs(root_dir: Path) -> NamedTuple:
     import time
     PathTuple = namedtuple("paths",  "logs model checkpoint")
     timestamp = time.strftime("_%Y_%m_%d-%H_%M_%S")
@@ -28,4 +28,4 @@ def make_dirs(root_dir: Path):
     checkpoint.mkdir(exist_ok=True, parents=True)
     return PathTuple(logs, model, checkpoint)
 
-# TODO: model checkpoints, parameter search, crossvalidation
+# TODO: parameter search, crossvalidation

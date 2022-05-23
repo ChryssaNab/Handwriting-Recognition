@@ -11,7 +11,7 @@ import tensorflow as tf
 from pathlib import Path
 from jiwer import wer, cer
 
-from task3.data import load_data_dict, load_dataset, train_test_split, to_dict, from_dict
+from task3.data import load_data_dict, load_dataset, train_test_split, filter_labels, to_dict, from_dict
 from task3.data import tokens_from_text, get_full_token_set
 from task3.preprocessing import invert_color, distortion_free_resize, scale_img
 from task3.preprocessing import LabelEncoder, LabelPadding
