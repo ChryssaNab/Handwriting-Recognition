@@ -101,7 +101,7 @@ class LabelEncoder:
     Encode labels from string to int and back.
     """
 
-    def __init__(self, tokens: List[str]):
+    def __init__(self, tokens: List[str]) -> None:
         """
         Create encoder with tokens as vocabulary.
 
@@ -131,9 +131,7 @@ class LabelEncoder:
         :return: label as string
         """
         label = self._dec(enc_label)
-        print(label.shape)
-        if len(label.shape) > 1:
-            label = tf.squeeze(label)
+        label = tf.cond(tf.rank(label) > tf.constant(1), lambda: tf.squeeze(label), lambda: label)
         label = "".join([c.decode() for c in label.numpy()])
         return label
 
@@ -151,31 +149,40 @@ class LabelPadding:
     Add padding to encoded label or remove it.
     """
 
-    def __init__(self, pad_value: Union[int, str], max_len: int, label_encoder: LabelEncoder):
+    def __init__(self, pad_value: int, max_len: int) -> None:
         """
         Create padding class. Pads encoded labels to max_len with pad_value.
 
-        :param pad_value: padding token
+        :param pad_value: padding token as int
         :param max_len: length of padded labels
-        :param label_encoder: encoder that encoded labels
         """
         self.pad_value = pad_value
-        if isinstance(pad_value, str):
-            self.pad_value = label_encoder.encode(pad_value, unicode_split=False)
         self.max_len = max_len
-        self.label_encoder = label_encoder
 
-    def add(self, label: tf.Tensor) -> tf.Tensor:
+    def add(self, label: tf.Tensor, pad_value: int = None) -> tf.Tensor:
         """
         Add padding to an encoded label.
 
         :param label: label as int tensor
+        :param pad_value: int value to use for padding
         :return: padded label as int tensor
         """
-        label = tf.pad(label, paddings=[[0, self.max_len - len(self.label_encoder.decode(label))]],
-                       constant_values=self.pad_value)
+        if pad_value is None:
+            pad_value = self.pad_value
+        label = tf.pad(label, paddings=[[0, self.max_len - tf.shape(label)[0]]],
+                       constant_values=pad_value)
         return label
 
-    # TODO: implement
-    def remove(self, label):
-        raise NotImplementedError
+    def remove(self, label, pad_value: int = None) -> tf.Tensor:
+        """
+        Remove padding from an encoded tensor.
+
+        :param label:
+        :param pad_value:
+        :return: encoded label without padding
+        """
+        if pad_value is None:
+            pad_value = self.pad_value
+        label = tf.cond(tf.rank(label) > tf.constant(1), lambda: tf.squeeze(label), lambda: label)
+        label = tf.gather(label, tf.where(tf.math.not_equal(label, pad_value)))
+        return label
