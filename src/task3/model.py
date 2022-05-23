@@ -12,7 +12,7 @@ class CTCLossLayer(tf.keras.layers.Layer):
     https://keras.io/examples/audio/ctc_asr/
     """
 
-    def __init__(self, name: str = "CTC_Loss", **kwargs):
+    def __init__(self, name: str = "CTC_Loss", **kwargs) -> None:
         super().__init__(name=name, trainable=False, **kwargs)
         self.loss_fn = tf.keras.backend.ctc_batch_cost
 
@@ -43,7 +43,7 @@ class CTCDecodingLayer(tf.keras.layers.Layer):
     https://docs.w3cub.com/tensorflow~python/tf/keras/backend/ctc_decode.html
     """
 
-    def __init__(self, name: str = "CTC_Decoding", **kwargs):
+    def __init__(self, name: str = "CTC_Decoding", **kwargs) -> None:
         super().__init__(name=name, trainable=False, **kwargs)
         self.decode_fn = tf.keras.backend.ctc_decode
 
@@ -111,4 +111,61 @@ def build_LSTM_model(n_classes: int, width: int = 800) -> tf.keras.Model:
 
     model = tf.keras.models.Model(inputs=[input_img, input_label], outputs=output, name="LSTM_model")
 
+    return model
+
+
+def build_model(n_classes, image_width = 800, image_height = 64):
+    # Inputs to the model
+    input_img = tf.keras.Input(shape=(image_width, image_height, 1), name="Image")
+    labels = tf.keras.layers.Input(name="Label", shape=(None,))
+
+    # First conv block.
+    x = tf.keras.layers.Conv2D(
+        256,
+        (3, 3),
+        activation="relu",
+        kernel_initializer="he_normal",
+        padding="same",
+        name="Conv1",
+    )(input_img)
+    x = tf.keras.layers.MaxPooling2D((2,2), name="pool1", padding = "same")(x)
+
+    # Second conv block.
+    x = tf.keras.layers.Conv2D(
+        512,
+        (3, 3),
+        activation="relu",
+        kernel_initializer="he_normal",
+        padding="same",
+        name="Conv2",
+    )(x)
+    x = tf.keras.layers.MaxPooling2D((2,2), name="pool2", padding = "same")(x)
+
+    # We have used two max pool with pool size and strides 2.
+    # Hence, downsampled feature maps are 4x smaller. The number of
+    # filters in the last layer is 64. Reshape accordingly before
+    # passing the output to the RNN part of the model.
+    new_shape = ((image_width // 4), (image_height // 4) * 512)
+    x = tf.keras.layers.Reshape(target_shape=new_shape, name="reshape")(x)
+    x = tf.keras.layers.Dense(512, activation="relu", name="dense1")(x)
+    x = tf.keras.layers.Dropout(0.2)(x)
+
+    # RNNs.
+    x = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(512, return_sequences=True, dropout=0.25))(x)
+    x = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(256, return_sequences=True, dropout=0.25))(x)
+
+    # +2 is to account for the two special tokens introduced by the CTC loss.
+    # The recommendation comes here: https://git.io/J0eXP.
+    x = tf.keras.layers.Dense(n_classes+2, activation="softmax", name="dense2")(x)
+
+    # Add CTC layer for calculating CTC loss at each step.
+    output = CTCLossLayer(name="ctc_loss")((labels, x))
+    output = CTCDecodingLayer(name="CTC_Decoding")(output)
+
+    # Define the model.
+    model = tf.keras.models.Model(inputs=[input_img, labels], outputs=output, name="handwriting_recognizer")
+    # Optimizer.
+    #opt = tf.keras.optimizers.Adam()
+    # Compile the model and return.
+    #model.compile(optimizer=opt)
     return model
