@@ -22,13 +22,14 @@ from preprocessing import invert_color, distortion_free_resize, scale_img
 from preprocessing import LabelEncoder, LabelPadding
 from model import build_LSTM_model, remove_ctc_loss_layer
 from metrics import ErrorRateCallback
-from utils import make_dirs
+from utils import make_dirs, track_time
 
 # Set path to the IAM folder
 #local_path_to_iam = "C:\\Users\\Luca\\Desktop\\HWR"
 local_path_to_iam = "C:\\Users\\muell\\Desktop\\HWR\\Task 3\\Data"
 
 
+@track_time
 def main():
     global local_path_to_iam
 
@@ -41,6 +42,7 @@ def main():
     img_dir = data_dir / "img"
 
     # Create paths for logs, models, checkpoints
+    print("Setting up results folder...")
     root_dir = Path(".") / "iam_results"
     paths = make_dirs(root_dir)
 

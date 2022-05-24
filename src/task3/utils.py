@@ -2,17 +2,12 @@
 Utilities for IAM
 """
 
+import time
 import matplotlib.pyplot as plt
 import tensorflow as tf
 from pathlib import Path
 from typing import NamedTuple
 from collections import namedtuple
-
-
-def show_sample(X: tf.Tensor, y: tf.Tensor) -> None:
-    plt.imshow(tf.transpose(tf.image.flip_left_right(X), [1, 0, 2]), cmap='Greys')
-    plt.title(y)
-    plt.show()
 
 
 def make_dirs(root_dir: Path) -> NamedTuple:
@@ -22,16 +17,48 @@ def make_dirs(root_dir: Path) -> NamedTuple:
     :param root_dir: folder iam_results
     :return: paths to logs, models, checkpoints
     """
-    import time
     PathTuple = namedtuple("paths",  "logs model checkpoint")
     timestamp = time.strftime("_%Y_%m_%d-%H_%M_%S")
-    run_id = "run" + timestamp
-    logs = root_dir / "logs" / run_id
-    logs.mkdir(exist_ok=True, parents=True)
-    model = root_dir / "models" / run_id
-    model.mkdir(exist_ok=True, parents=True)
-    checkpoint = root_dir / "checkpoints" /run_id
-    checkpoint.mkdir(exist_ok=True, parents=True)
+    run_dir = root_dir / f"run_{timestamp}"
+    run_dir.mkdir(parents=True)
+    logs = run_dir / "logs"
+    logs.mkdir()
+    model = run_dir / "model"
+    model.mkdir()
+    checkpoint = run_dir / "checkpoint"
+    checkpoint.mkdir()
     return PathTuple(logs, model, checkpoint)
+
+
+def track_time(func):
+    """
+    Decorator function to track and print function execution time.
+
+    :param func: function to track
+    :return: wrapped function
+    """
+
+    def _inner(*args, **kwargs):
+        begin = time.time()
+        func(*args, **kwargs)
+        end = time.time()
+        duration = (end - begin)
+        print(f"Total time taken in function '{func.__name__}': "
+              f"{duration // 60**2}h {(duration // 60) % 60**2}m {duration % 60}s")
+
+    return _inner
+
+
+def show_sample(X: tf.Tensor, y: str) -> None:
+    """
+    Show image and label with matplotlib.
+
+    :param X: image as tensor
+    :param y: label as string
+    """
+
+    plt.imshow(tf.transpose(tf.image.flip_left_right(X), [1, 0, 2]), cmap='Greys')
+    plt.title(y)
+    plt.show()
 
 # TODO: parameter search, crossvalidation
