@@ -128,7 +128,7 @@ def remove_ctc_loss_layer(train_model: tf.keras.Model,
                         model_name: str,
                         input_layer: str = "Image",
                         softmax_layer: str = "Output_Softmax",
-                        decoding_layer: str = "CTC_Decodig",
+                        decoding_layer: str = "CTC_Decoding",
                         ) -> tf.keras.Model:
     """
     Remove CTC loss layer by connecting the softmax layer to  the CTC decoding layer.
@@ -138,7 +138,7 @@ def remove_ctc_loss_layer(train_model: tf.keras.Model,
     :param input_layer: name of input layer
     :param softmax_layer: name of softmax layer
     :param decoding_layer: name of decoding layer
-    :return:
+    :return: model without CTC loss layer
     """
 
     softmax = train_model.get_layer(name=softmax_layer).output
