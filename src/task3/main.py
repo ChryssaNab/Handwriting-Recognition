@@ -2,8 +2,12 @@
 Train and test a model on the IAM dataset.
 """
 
-import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+DEBUG = True
+GPU_OFF = True
+
+if GPU_OFF:
+    import os
+    os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 import sys
 import tensorflow as tf
@@ -16,10 +20,9 @@ from data import load_data_dict, load_dataset, train_test_split, filter_labels, 
 from data import tokens_from_text, get_full_token_set
 from preprocessing import invert_color, distortion_free_resize, scale_img
 from preprocessing import LabelEncoder, LabelPadding
-from model import build_LSTM_model
+from model import build_LSTM_model, remove_ctc_loss_layer
 from metrics import ErrorRateCallback
 from utils import make_dirs
-
 
 # Set path to the IAM folder
 #local_path_to_iam = "C:\\Users\\Luca\\Desktop\\HWR"
@@ -42,12 +45,13 @@ def main():
     paths = make_dirs(root_dir)
 
     # Load settings
-    s = get_lstm_settings(debug=True)
+    s = get_lstm_settings(debug=DEBUG)
 
-    # Train settings
+    # Model settings
     epochs = s["epochs"]
     batch_size = s["batch_size"]
     optimizer = s["optimizer"](s["learning_rate"])
+    model_name = s["model_name"]
 
     # Set input dimensions
     image_width = s["image_width"]
@@ -84,7 +88,6 @@ def main():
     dataset = dataset.map(to_dict)
     dataset = dataset.batch(batch_size, drop_remainder=True)
 
-
     # Split data: Train = 0.765, Valid = 0.085, Test = 0.15
     train_ds, test_ds = train_test_split(dataset, train_size=s["test_split"], shuffle=False)
     train_ds, val_ds = train_test_split(train_ds, train_size=s["validation_split"], shuffle=True)
@@ -95,22 +98,24 @@ def main():
     print(train_model.summary())
 
     # Remove loss layer after training
-    softmax = train_model.get_layer(name="Output_Softmax").output
-    output = train_model.get_layer(name="CTC_Decoding")(softmax)
-    final_model = tf.keras.models.Model(
-        inputs=train_model.get_layer(name="Image").input, outputs=output, name="LSTM_model_trained"
-    )
+    final_model = remove_ctc_loss_layer(train_model, model_name)
 
     # Callbacks
-    error_cb = ErrorRateCallback(val_ds.take(1), label_encoder, label_padding)
+    error_cb = ErrorRateCallback(val_ds, label_encoder, label_padding)
     tensorboard_cb = tf.keras.callbacks.TensorBoard(log_dir=paths.logs)
-    checkpoint_cb = tf.keras.callbacks.ModelCheckpoint(paths.checkpoint / f"{s['model_name']}_checkpoint.h5")
+    checkpoint_cb = tf.keras.callbacks.ModelCheckpoint(paths.checkpoint / f"{model_name}_checkpoint.h5")
     early_stopping_cb = tf.keras.callbacks.EarlyStopping(patience=10, restore_best_weights=True)
     callbacks = [error_cb, tensorboard_cb, checkpoint_cb, early_stopping_cb]
 
+    # Use only single batches for debugging
+    if s["debug"]:
+        train_ds = train_ds.take(1)
+        val_ds = val_ds.take(1)
+        test_ds = test_ds.take(1)
+
     # Train
-    history = train_model.fit(train_ds.take(1),
-                              validation_data=val_ds.take(2),
+    history = train_model.fit(train_ds,
+                              validation_data=val_ds,
                               epochs=epochs,
                               callbacks=callbacks,
                               )
@@ -136,7 +141,7 @@ def main():
         print(f"cer: {cer_score}")
 
     # Save model
-    final_model.save(paths.model / f"{s['model_name']}.h5")
+    final_model.save(paths.model / f"{model_name}.h5")
 
 
 if __name__ == "__main__":

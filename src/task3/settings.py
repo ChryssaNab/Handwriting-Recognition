@@ -35,12 +35,16 @@ def get_lstm_settings(debug: bool = False) -> dict:
         # CTC
         "ctc_blank":        (-1),
 
-        # IDs
+        # ID
         "model_name":       "LSTM_model",
+
+        # Debug mode
+        "debug": False
     }
 
     if debug:
         settings["epochs"] = 1
         settings["model_name"] += "_debug"
+        settings["debug"] = True
 
     return settings
