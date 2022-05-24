@@ -122,3 +122,29 @@ def build_LSTM_model(n_classes: int, width: int = 800) -> tf.keras.Model:
     model = tf.keras.models.Model(inputs=[input_img, input_label], outputs=output, name="LSTM_model")
 
     return model
+
+
+def remove_ctc_loss_layer(train_model: tf.keras.Model,
+                        model_name: str,
+                        input_layer: str = "Image",
+                        softmax_layer: str = "Output_Softmax",
+                        decoding_layer: str = "CTC_Decodig",
+                        ) -> tf.keras.Model:
+    """
+    Remove CTC loss layer by connecting the softmax layer to  the CTC decoding layer.
+
+    :param train_model: model with CTC loss layer
+    :param model_name: name of architecture
+    :param input_layer: name of input layer
+    :param softmax_layer: name of softmax layer
+    :param decoding_layer: name of decoding layer
+    :return:
+    """
+
+    softmax = train_model.get_layer(name=softmax_layer).output
+    output = train_model.get_layer(name=decoding_layer)(softmax)
+    final_model = tf.keras.models.Model(
+        inputs=train_model.get_layer(name=input_layer).input, outputs=output, name=f"{model_name}_final"
+    )
+
+    return final_model
