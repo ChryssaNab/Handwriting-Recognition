@@ -3,7 +3,7 @@ Data loading utilities for IAM
 """
 
 import tensorflow as tf
-from typing import Tuple, List
+from typing import Tuple, List, Dict, Union
 from pathlib import Path
 
 
@@ -91,9 +91,17 @@ def train_test_split(dataset: tf.data.Dataset,
     return train_dataset, test_dataset
 
 
-# TODO: implement
-def filter_labels(sample, *args):
-    raise NotImplementedError
+def filter_labels(sample: Union[tf.Tensor, Dict[str, tf.Tensor]], *args) -> tf.Tensor:
+    """
+    Remove labels from dataset for predictions.
+
+    :param sample: X as tensor or dict with X as 'Image' and y as 'Label'
+    :param args: y as tensor if X is a tensor
+    :return: X as tensor
+    """
+    if isinstance(sample, dict):
+        return sample["Image"]
+    return sample
 
 
 def to_dict(x: tf.Tensor, y: tf.Tensor, x_key: str = "Image", y_key: str = "Label") -> dict:
