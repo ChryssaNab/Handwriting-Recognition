@@ -2,8 +2,8 @@
 Train and test a model on the IAM dataset.
 """
 
-import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+#import os
+#os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 import sys
 import tensorflow as tf
@@ -11,18 +11,18 @@ import tensorflow as tf
 from pathlib import Path
 from jiwer import wer, cer
 
-from task3.data import load_data_dict, load_dataset, train_test_split, filter_labels, to_dict, from_dict
-from task3.data import tokens_from_text, get_full_token_set
-from task3.preprocessing import invert_color, distortion_free_resize, scale_img
-from task3.preprocessing import LabelEncoder, LabelPadding
-from task3.model import build_LSTM_model, build_model
-from task3.metrics import ErrorRateCallback
-from task3.utils import make_dirs
+from data import load_data_dict, load_dataset, train_test_split, filter_labels, to_dict, from_dict
+from data import tokens_from_text, get_full_token_set
+from preprocessing import invert_color, distortion_free_resize, scale_img
+from preprocessing import LabelEncoder, LabelPadding
+from model import build_LSTM_model
+from metrics import ErrorRateCallback
+from utils import make_dirs
 
 
 # Set path to the IAM folder
-#local_path_to_iam = "C:\\Users\\Luca\\Desktop\\HWR"
-local_path_to_iam = "C:\\Users\\muell\\Desktop\\HWR\\Task 3\\Data"
+local_path_to_iam = "C:\\Users\\Luca\\Desktop\\HWR"
+#local_path_to_iam = "C:\\Users\\muell\\Desktop\\HWR\\Task 3\\Data"
 
 
 def main():
@@ -81,8 +81,11 @@ def main():
     dataset = dataset.map(to_dict)
     dataset = dataset.batch(BATCH_SIZE, drop_remainder=True)
 
+
+    # TODO: find proper split ratio
     # Split data
     train_ds, test_ds = train_test_split(dataset, train_size=0.8, shuffle=True)
+    train_ds, val_ds = train_test_split(train_ds, train_size=0.9, shuffle=True)
 
     # Model for training
     train_model = build_LSTM_model(len(tokens), image_width)
@@ -104,15 +107,15 @@ def main():
     callbacks = [error_cb, tensorboard_cb, checkpoint_cb, early_stopping_cb]
 
     # Train
-    history = train_model.fit(train_ds.skip(100).take(1),
-                              validation_data=train_ds.take(1),
+    history = train_model.fit(train_ds,
+                              validation_data=val_ds,
                               epochs=EPOCHS,
                               callbacks=callbacks,
                               )
 
     # Test
-    batch = train_ds.take(1)
-    y_pred = final_model.predict(batch)
+    batch = val_ds.take(1)
+    y_pred = final_model.predict(batch.map(lambda d: d["Image"]))
     y_pred = tf.convert_to_tensor(y_pred, dtype=tf.int64)
     for i, sample in iter(batch.unbatch().enumerate()):
         img, y_true = sample["Image"], sample["Label"]

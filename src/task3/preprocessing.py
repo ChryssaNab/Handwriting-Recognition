@@ -4,7 +4,7 @@ Pre-processing functions & classes for IAM
 
 import tensorflow as tf
 from tensorflow.keras.layers.experimental.preprocessing import StringLookup
-from typing import List, Tuple, Union
+from typing import List, Tuple
 
 
 @tf.function
@@ -177,8 +177,8 @@ class LabelPadding:
         """
         Remove padding from an encoded tensor.
 
-        :param label:
-        :param pad_value:
+        :param label: padded label as int tensor
+        :param pad_value: int value to remove
         :return: encoded label without padding
         """
         if pad_value is None:

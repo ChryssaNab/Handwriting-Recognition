@@ -5,7 +5,7 @@ Metrics for IAM
 import tensorflow as tf
 from jiwer import wer, cer
 
-from task3.preprocessing import LabelEncoder, LabelPadding
+from preprocessing import LabelEncoder, LabelPadding
 
 
 # TODO: log output since its not a metric.

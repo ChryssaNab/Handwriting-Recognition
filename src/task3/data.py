@@ -80,12 +80,12 @@ def train_test_split(dataset: tf.data.Dataset,
     :return:
     """
 
-    assert 0.0 < train_size < 1.0, f"Expected train_size to be a float in range (0, 1), got {train_size} instead."
+    assert 0.0 < train_size < 1.0, f"Expected train_size to be a float in range (0.0, 1.0), got {train_size} instead."
     ds_size = dataset.cardinality()
     test_size = tf.constant(1.0 - train_size, dtype=tf.float32)
     n_test_samples = tf.cast(test_size * tf.cast(ds_size, dtype=tf.float32), dtype=ds_size.dtype)
     if shuffle:
-        dataset.shuffle(dataset.cardinality())
+        dataset.shuffle(ds_size)
     test_dataset = dataset.take(n_test_samples)
     train_dataset = dataset.skip(n_test_samples)
     return train_dataset, test_dataset
@@ -96,7 +96,6 @@ def filter_labels(sample, *args):
     raise NotImplementedError
 
 
-@tf.function
 def to_dict(x: tf.Tensor, y: tf.Tensor, x_key: str = "Image", y_key: str = "Label") -> dict:
     """
     Combine two tensors into a dict.
@@ -110,7 +109,6 @@ def to_dict(x: tf.Tensor, y: tf.Tensor, x_key: str = "Image", y_key: str = "Labe
     return {x_key: x, y_key: y}
 
 
-@tf.function
 def from_dict(d: dict, x_key: str = "image", y_key: str = "label") -> Tuple[tf.Tensor, tf.Tensor]:
     """
     Undo to_dict by extracting two tensors from dict.

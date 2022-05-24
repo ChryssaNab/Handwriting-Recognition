@@ -9,13 +9,19 @@ from typing import NamedTuple
 from collections import namedtuple
 
 
-def show_sample(X: tf.Tensor, y: tf.Tensor):
+def show_sample(X: tf.Tensor, y: tf.Tensor) -> None:
     plt.imshow(tf.transpose(tf.image.flip_left_right(X), [1, 0, 2]), cmap='Greys')
     plt.title(y)
     plt.show()
 
 
 def make_dirs(root_dir: Path) -> NamedTuple:
+    """
+    Create folders for results at root_dir.
+
+    :param root_dir: folder iam_results
+    :return: paths to logs, models, checkpoints
+    """
     import time
     PathTuple = namedtuple("paths",  "logs model checkpoint")
     timestamp = time.strftime("_%Y_%m_%d-%H_%M_%S")
