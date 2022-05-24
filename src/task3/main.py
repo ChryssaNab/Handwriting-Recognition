@@ -11,6 +11,7 @@ import tensorflow as tf
 from pathlib import Path
 from jiwer import wer, cer
 
+from settings import get_lstm_settings
 from data import load_data_dict, load_dataset, train_test_split, filter_labels, to_dict, from_dict
 from data import tokens_from_text, get_full_token_set
 from preprocessing import invert_color, distortion_free_resize, scale_img
@@ -40,15 +41,20 @@ def main():
     root_dir = Path(".") / "iam_results"
     paths = make_dirs(root_dir)
 
-    # Settings
-    EPOCHS = 1
-    BATCH_SIZE = 24
-    LEARNING_RATE = 0.001
-    OPTIMIZER = tf.keras.optimizers.RMSprop(LEARNING_RATE)
+    # Load settings
+    s = get_lstm_settings(debug=True)
+
+    # Train settings
+    epochs = s["epochs"]
+    batch_size = s["batch_size"]
+    optimizer = s["optimizer"](s["learning_rate"])
 
     # Set input dimensions
-    image_width = 800
-    image_height = 64
+    image_width = s["image_width"]
+    image_height = s["image_height"]
+
+    # longest label
+    max_label_len = s["max_label_length"]
 
     # Load data
     data_dict = load_data_dict(data_dir)
@@ -58,10 +64,7 @@ def main():
     full_text = "".join(data_dict.values())
     tokens = tokens_from_text(full_text)
     pad_value = len(tokens) + 3
-    ctc_blank = -1
-
-    # longest label
-    max_label_len = max(list(map(len, data_dict.values())))
+    ctc_blank = s["ctc_blank"]
 
     # Prepare label encoding & padding
     label_encoder = LabelEncoder(tokens)
@@ -79,16 +82,16 @@ def main():
 
     # Change to dict format, prepare for input
     dataset = dataset.map(to_dict)
-    dataset = dataset.batch(BATCH_SIZE, drop_remainder=True)
+    dataset = dataset.batch(batch_size, drop_remainder=True)
 
 
     # Split data: Train = 0.765, Valid = 0.085, Test = 0.15
-    train_ds, test_ds = train_test_split(dataset, train_size=0.85, shuffle=False)
-    train_ds, val_ds = train_test_split(train_ds, train_size=0.9, shuffle=True)
+    train_ds, test_ds = train_test_split(dataset, train_size=s["test_split"], shuffle=False)
+    train_ds, val_ds = train_test_split(train_ds, train_size=s["validation_split"], shuffle=True)
 
     # Model for training
     train_model = build_LSTM_model(len(tokens), image_width)
-    train_model.compile(optimizer=OPTIMIZER)
+    train_model.compile(optimizer=optimizer)
     print(train_model.summary())
 
     # Remove loss layer after training
@@ -99,18 +102,20 @@ def main():
     )
 
     # Callbacks
-    error_cb = ErrorRateCallback(train_model, train_ds.take(10), label_encoder, label_padding)
+    error_cb = ErrorRateCallback(val_ds.take(1), label_encoder, label_padding)
     tensorboard_cb = tf.keras.callbacks.TensorBoard(log_dir=paths.logs)
-    checkpoint_cb = tf.keras.callbacks.ModelCheckpoint(paths.checkpoint / "checkpoint.h5")
+    checkpoint_cb = tf.keras.callbacks.ModelCheckpoint(paths.checkpoint / f"{s['model_name']}_checkpoint.h5")
     early_stopping_cb = tf.keras.callbacks.EarlyStopping(patience=10, restore_best_weights=True)
     callbacks = [error_cb, tensorboard_cb, checkpoint_cb, early_stopping_cb]
 
     # Train
-    history = train_model.fit(train_ds,
-                              validation_data=val_ds,
-                              epochs=EPOCHS,
+    history = train_model.fit(train_ds.take(1),
+                              validation_data=val_ds.take(2),
+                              epochs=epochs,
                               callbacks=callbacks,
                               )
+
+    print(history.history)
 
     # Test
     batch = val_ds.take(1)
@@ -131,7 +136,7 @@ def main():
         print(f"cer: {cer_score}")
 
     # Save model
-    final_model.save(paths.model / "model.h5")
+    final_model.save(paths.model / f"{s['model_name']}.h5")
 
 
 if __name__ == "__main__":
