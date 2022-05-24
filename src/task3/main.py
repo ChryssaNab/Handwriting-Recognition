@@ -2,8 +2,8 @@
 Train and test a model on the IAM dataset.
 """
 
-#import os
-#os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 import sys
 import tensorflow as tf
@@ -21,8 +21,8 @@ from utils import make_dirs
 
 
 # Set path to the IAM folder
-local_path_to_iam = "C:\\Users\\Luca\\Desktop\\HWR"
-#local_path_to_iam = "C:\\Users\\muell\\Desktop\\HWR\\Task 3\\Data"
+#local_path_to_iam = "C:\\Users\\Luca\\Desktop\\HWR"
+local_path_to_iam = "C:\\Users\\muell\\Desktop\\HWR\\Task 3\\Data"
 
 
 def main():
@@ -82,9 +82,8 @@ def main():
     dataset = dataset.batch(BATCH_SIZE, drop_remainder=True)
 
 
-    # TODO: find proper split ratio
-    # Split data
-    train_ds, test_ds = train_test_split(dataset, train_size=0.8, shuffle=True)
+    # Split data: Train = 0.765, Valid = 0.085, Test = 0.15
+    train_ds, test_ds = train_test_split(dataset, train_size=0.85, shuffle=False)
     train_ds, val_ds = train_test_split(train_ds, train_size=0.9, shuffle=True)
 
     # Model for training
@@ -115,7 +114,7 @@ def main():
 
     # Test
     batch = val_ds.take(1)
-    y_pred = final_model.predict(batch.map(lambda d: d["Image"]))
+    y_pred = final_model.predict(val_ds.map(filter_labels))
     y_pred = tf.convert_to_tensor(y_pred, dtype=tf.int64)
     for i, sample in iter(batch.unbatch().enumerate()):
         img, y_true = sample["Image"], sample["Label"]
