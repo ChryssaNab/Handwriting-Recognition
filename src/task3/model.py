@@ -21,7 +21,7 @@ class CTCLossLayer(tf.keras.layers.Layer):
         Compute CTC loss from label and model output.
 
         :param X: tuple (label, model output)
-        :return:
+        :return: model output
         """
 
         y_true, y_pred = X
@@ -74,18 +74,21 @@ def build_LSTM_model(n_classes: int, width: int = 800) -> tf.keras.Model:
 
     :param n_classes: number of classes to predict (i.e. number of characters), n_classes < 100
     :param width: width of input image
-    :return: the model as keras Sequential model
+    :return: the model
     """
 
+    # input dimensions
     height, channels = 64, 1
     logit_length = width // 4
 
     if width % logit_length:
         raise ValueError("input width not divisible by 4")
 
+    # input
     input_img = tf.keras.Input(shape=(width, height, channels), name="Image")
     input_label = tf.keras.layers.Input(name="Label", shape=(None,))
 
+    # convolution
     conv = tf.keras.layers.Conv2D(64, 5, padding="same", activation="relu", name="Conv_1")(input_img)
     conv = tf.keras.layers.MaxPool2D(padding="same", name="MaxPool_1")(conv)
     conv = tf.keras.layers.Conv2D(128, 5, padding="same", activation="relu", name="Conv_2")(conv)
@@ -101,16 +104,21 @@ def build_LSTM_model(n_classes: int, width: int = 800) -> tf.keras.Model:
     conv = tf.keras.layers.BatchNormalization(name="BatchNorm_2")(conv)
     conv = tf.keras.layers.Conv2D(512, 3, padding="same", activation="relu", name="Conv_7")(conv)
     conv = tf.keras.layers.MaxPool2D(pool_size=(1, 2), padding="same", name="MaxPool_6")(conv)
+
+    # lstm
     flat = tf.keras.layers.Reshape((logit_length, 512), name="Collapse")(conv)
     lstm = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(512, activation='tanh', return_sequences=True),
                                          name="BiDir_LSTM_1")(flat)
     lstm = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(512, activation='tanh', return_sequences=True),
                                          name="BiDir_LSTM_2")(lstm)
     lstm = tf.keras.layers.Dense(n_classes + 2, activation=None, name="Output_Dense")(lstm)
+
+    # output
     softmax = tf.keras.layers.Softmax(axis=-1, name="Output_Softmax")(lstm)
     output = CTCLossLayer(name="CTC_Loss")((input_label, softmax))
     output = CTCDecodingLayer(name="CTC_Decoding")(output)
 
+    # build model
     model = tf.keras.models.Model(inputs=[input_img, input_label], outputs=output, name="LSTM_model")
 
     return model
