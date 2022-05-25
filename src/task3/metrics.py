@@ -37,10 +37,16 @@ class ErrorRateCallback(tf.keras.callbacks.Callback):
         self.label_padding = label_padding
         self.ctc_blank = ctc_blank
         self.writer = None
-        if log_dir is not None:
-            self.writer = tf.summary.create_file_writer(logdir=str(log_dir))
+        self.log_dir = log_dir
 
-    def on_epoch_end(self, epoch, logs=None) -> None:
+    def on_train_begin(self, logs: dict = None) -> None:
+        self.writer = None
+
+    def on_test_begin(self, logs: dict = None) -> None:
+        self.writer = self.writer = tf.summary.create_file_writer(logdir=str(self.log_dir), name="validation")
+
+    def on_epoch_end(self, epoch: int, logs: dict = None) -> None:
+        epoch += 1
         wer_epoch = []
         cer_epoch = []
 
@@ -69,8 +75,10 @@ class ErrorRateCallback(tf.keras.callbacks.Callback):
             with self.writer.as_default(step=epoch):
                 tf.summary.histogram('wer', tf.convert_to_tensor(wer_epoch), step=epoch)
                 tf.summary.histogram('cer', tf.convert_to_tensor(cer_epoch), step=epoch)
+                tf.summary.scalar("mean wer", mean_wer, step=epoch)
+                tf.summary.scalar("mean cer", mean_cer, step=epoch)
 
         print(
-            f"WER for epoch {epoch + 1}: {mean_wer:.4f}\n"
-            f"CER for epoch {epoch + 1}: {mean_cer:.4f}"
+            f"WER for epoch {epoch}: {mean_wer:.4f}\n"
+            f"CER for epoch {epoch}: {mean_cer:.4f}"
         )
