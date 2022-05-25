@@ -112,7 +112,7 @@ class LabelEncoder:
 
     def encode(self, label: str, unicode_split: bool = True) -> tf.Tensor:
         """
-        Convert a string into a tensor with dtype int64.
+        Convert a string into a tensor with dtype int32.
 
         :param label: label as string
         :param unicode_split: tf.strings.unicode_split
@@ -124,7 +124,7 @@ class LabelEncoder:
 
     def decode(self, enc_label: tf.Tensor) -> str:
         """
-        Decode an encoded label (tensor with dtype int64) back to string.
+        Decode an encoded label (tensor with dtype int32) back to string.
         If the shape has more than one dimension, squeeze the label.
 
         :param enc_label: label as int tensor

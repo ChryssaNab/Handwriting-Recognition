@@ -53,7 +53,7 @@ class ErrorRateCallback(tf.keras.callbacks.Callback):
         # get prediction for each batch in validation set
         for batch in iter(self.val_ds):
             y_pred = self.model.predict(batch)
-            y_pred = tf.convert_to_tensor(y_pred, dtype=tf.int64)
+            y_pred = tf.convert_to_tensor(y_pred, dtype="int32")
 
             # get wer & cer for each sample in the batch
             for i, (img, y_true) in enumerate(zip(batch["Image"], batch["Label"])):
@@ -71,7 +71,6 @@ class ErrorRateCallback(tf.keras.callbacks.Callback):
 
         # write wer & cer to logdir
         if self.writer is not None:
-            print("write error rate to file...")
             with self.writer.as_default(step=epoch):
                 tf.summary.histogram('wer', tf.convert_to_tensor(wer_epoch), step=epoch)
                 tf.summary.histogram('cer', tf.convert_to_tensor(cer_epoch), step=epoch)
