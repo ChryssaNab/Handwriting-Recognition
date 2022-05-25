@@ -6,7 +6,7 @@ import time
 import matplotlib.pyplot as plt
 import tensorflow as tf
 from pathlib import Path
-from typing import NamedTuple
+from typing import NamedTuple, Dict, Union
 from collections import namedtuple
 
 
@@ -39,7 +39,6 @@ def track_time(func):
     :param func: function to track
     :return: wrapped function
     """
-
     def _inner(*args, **kwargs):
         begin = time.time()
         func(*args, **kwargs)
@@ -51,6 +50,26 @@ def track_time(func):
     return _inner
 
 
+def write_predictions(predictions: Dict[str, str], file_path: Union[str, Path] = None) -> bool:
+    """
+    Write input file names and predictions to txt file.
+
+    :param predictions: dict containing {file name: predictions}
+    :param file_path: path to output file
+    :return: False if IOError
+    """
+    try:
+        if file_path is None:
+            file_path = "predictions.txt"
+        with open(str(file_path), "w") as f:
+            for img_file, pred in predictions.items():
+                f.write(f"{img_file}\n{pred}\n\n")
+        return True
+
+    except IOError:
+        return False
+
+
 def show_sample(X: tf.Tensor, y: str) -> None:
     """
     Show image and label with matplotlib.
@@ -58,7 +77,6 @@ def show_sample(X: tf.Tensor, y: str) -> None:
     :param X: image as tensor
     :param y: label as string
     """
-
     plt.imshow(tf.transpose(tf.image.flip_left_right(X), [1, 0, 2]), cmap='Greys')
     plt.title(y)
     plt.show()
