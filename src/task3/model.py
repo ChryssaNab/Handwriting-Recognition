@@ -106,6 +106,7 @@ def build_lstm_model(n_classes: int, width: int = 800) -> tf.keras.Model:
     conv = tf.keras.layers.BatchNormalization(name="BatchNorm_2")(conv)
     conv = tf.keras.layers.Conv2D(512, 3, padding="same", activation="relu", name="Conv_7")(conv)
     conv = tf.keras.layers.MaxPool2D(pool_size=(1, 2), padding="same", name="MaxPool_6")(conv)
+    conv = tf.keras.layers.Dropout(0.4, name="Dropout_1")(conv)
 
     # lstm
     flat = tf.keras.layers.Reshape((logit_length, 512), name="Collapse")(conv)
