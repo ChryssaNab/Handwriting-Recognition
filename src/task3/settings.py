@@ -2,8 +2,6 @@
 Settings for IAM main
 """
 
-import tensorflow as tf
-
 
 def get_lstm_settings(debug: bool = False) -> dict:
     """
@@ -19,7 +17,7 @@ def get_lstm_settings(debug: bool = False) -> dict:
         "epochs":           10,
         "batch_size":       24,
         "learning_rate":    0.001,
-        "optimizer":        tf.keras.optimizers.RMSprop,
+        "optimizer":        "RMSprop",
 
         # Image size
         "image_width":      800,
@@ -39,7 +37,7 @@ def get_lstm_settings(debug: bool = False) -> dict:
         "model_name":       "LSTM_model",
 
         # Debug mode
-        "debug": False
+        "debug":            False
     }
 
     if debug:

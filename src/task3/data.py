@@ -117,7 +117,7 @@ def to_dict(x: tf.Tensor, y: tf.Tensor, x_key: str = "Image", y_key: str = "Labe
     return {x_key: x, y_key: y}
 
 
-def from_dict(d: dict, x_key: str = "image", y_key: str = "label") -> Tuple[tf.Tensor, tf.Tensor]:
+def from_dict(d: dict, x_key: str = "Image", y_key: str = "Label") -> Tuple[tf.Tensor, tf.Tensor]:
     """
     Undo to_dict by extracting two tensors from dict.
 

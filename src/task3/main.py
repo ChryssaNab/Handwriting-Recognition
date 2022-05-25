@@ -2,12 +2,16 @@
 Train and test a model on the IAM dataset.
 """
 
-DEBUG = True
-GPU_OFF = True
+################################################## DEBUGGING ###########################################################
+
+DEBUG = 0
+GPU_OFF = 0
 
 if GPU_OFF:
     import os
     os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+
+########################################################################################################################
 
 import sys
 import tensorflow as tf
@@ -25,8 +29,8 @@ from metrics import ErrorRateCallback
 from utils import make_dirs, track_time
 
 # Set path to the IAM folder
-#local_path_to_iam = "C:\\Users\\Luca\\Desktop\\HWR"
-local_path_to_iam = "C:\\Users\\muell\\Desktop\\HWR\\Task 3\\Data"
+local_path_to_iam = "C:\\Users\\Luca\\Desktop\\HWR"
+#local_path_to_iam = "C:\\Users\\muell\\Desktop\\HWR\\Task 3\\Data"
 
 
 @track_time
@@ -52,7 +56,7 @@ def main():
     # Model settings
     epochs = s["epochs"]
     batch_size = s["batch_size"]
-    optimizer = s["optimizer"](s["learning_rate"])
+    optimizer = tf.keras.optimizers.get(s["optimizer"])
     model_name = s["model_name"]
 
     # Set input dimensions
@@ -139,8 +143,8 @@ def main():
         print(f"y_pred: {output}")
         wer_score = wer(y_true, output)
         cer_score = cer(y_true, output)
-        print(f"wer: {wer_score}")
-        print(f"cer: {cer_score}")
+        print(f"wer: {wer_score:.4f}")
+        print(f"cer: {cer_score:.4f}\n")
 
     # Save model
     final_model.save(paths.model / f"{model_name}.h5")
