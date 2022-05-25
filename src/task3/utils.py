@@ -17,7 +17,7 @@ def make_dirs(root_dir: Path) -> NamedTuple:
     :param root_dir: folder iam_results
     :return: paths to logs, models, checkpoints
     """
-    PathTuple = namedtuple("paths",  "logs model checkpoint")
+    PathTuple = namedtuple("paths",  "logs model checkpoint settings")
     timestamp = time.strftime("_%Y_%m_%d-%H_%M_%S")
     run_dir = root_dir / f"run_{timestamp}"
     run_dir.mkdir(parents=True)
@@ -27,7 +27,9 @@ def make_dirs(root_dir: Path) -> NamedTuple:
     model.mkdir()
     checkpoint = run_dir / "checkpoint"
     checkpoint.mkdir()
-    return PathTuple(logs, model, checkpoint)
+    settings = run_dir / "settings"
+    settings.mkdir()
+    return PathTuple(logs, model, checkpoint, settings)
 
 
 def track_time(func):

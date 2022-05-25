@@ -4,8 +4,8 @@ Train and test a model on the IAM dataset.
 
 ################################################## DEBUGGING ###########################################################
 
-DEBUG = 0
-GPU_OFF = 0
+DEBUG = 1
+GPU_OFF = 1
 
 if GPU_OFF:
     import os
@@ -14,12 +14,13 @@ if GPU_OFF:
 ########################################################################################################################
 
 import sys
+import json
 import tensorflow as tf
 
 from pathlib import Path
 from jiwer import wer, cer
 
-from settings import get_lstm_settings
+from settings import get_lstm_settings, save_settings, load_settings
 from data import load_data_dict, load_dataset, train_test_split, filter_labels, to_dict, from_dict
 from data import tokens_from_text, get_full_token_set
 from preprocessing import invert_color, distortion_free_resize, scale_img
@@ -29,8 +30,8 @@ from metrics import ErrorRateCallback
 from utils import make_dirs, track_time
 
 # Set path to the IAM folder
-local_path_to_iam = "C:\\Users\\Luca\\Desktop\\HWR"
-#local_path_to_iam = "C:\\Users\\muell\\Desktop\\HWR\\Task 3\\Data"
+#local_path_to_iam = "C:\\Users\\Luca\\Desktop\\HWR"
+local_path_to_iam = "C:\\Users\\muell\\Desktop\\HWR\\Task 3\\Data"
 
 
 @track_time
@@ -50,8 +51,11 @@ def main():
     root_dir = Path(".") / "iam_results"
     paths = make_dirs(root_dir)
 
-    # Load settings
+    # Load & save settings
     s = get_lstm_settings(debug=DEBUG)
+    save_settings(s, paths.settings)
+
+    exit()
 
     # Model settings
     epochs = s["epochs"]

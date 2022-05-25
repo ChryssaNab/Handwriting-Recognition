@@ -2,6 +2,9 @@
 Settings for IAM main
 """
 
+import json
+from pathlib import Path
+
 
 def get_lstm_settings(debug: bool = False) -> dict:
     """
@@ -44,5 +47,36 @@ def get_lstm_settings(debug: bool = False) -> dict:
         settings["epochs"] = 1
         settings["model_name"] += "_debug"
         settings["debug"] = True
+
+    return settings
+
+
+def save_settings(settings: dict, path: Path, filename: str = None):
+    """
+    Save settings dict as json file.
+
+    :param settings: settings as dict
+    :param path: save location
+    :param filename: name of settings file
+    """
+    if filename is None:
+        filename = f"{settings['model_name']}_settings.json"
+
+    with open(str(path / filename), "w") as f:
+        json.dump(settings, f)
+
+
+def load_settings(path: Path) -> dict:
+    """
+    Load settings as dict from json file.
+
+    :param path: path to json file
+    :return: settings as dict
+    """
+    with open(str(path), "r") as f:
+        settings = json.load(f)
+
+    if not isinstance(settings, dict):
+        raise TypeError("Cannot load settings as dict")
 
     return settings
