@@ -3,11 +3,20 @@ Utilities for IAM
 """
 
 import time
+import argparse
 import matplotlib.pyplot as plt
 import tensorflow as tf
 from pathlib import Path
 from typing import NamedTuple, Dict, Union
 from collections import namedtuple
+
+
+def get_parser():
+    parser = argparse.ArgumentParser(description="args for IAM main")
+    parser.add_argument('path', type=str, nargs='?', default=None, help="path to 'IAM-data'")
+    parser.add_argument('--mode', type=str, choices=['train', 'test'], default='test', help="train or test model")
+    parser.add_argument('--debug', action='store_true', help="use debug mode", default=False)
+    return parser
 
 
 def make_dirs(root_dir: Path) -> NamedTuple:
