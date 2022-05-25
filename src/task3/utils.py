@@ -12,6 +12,12 @@ from collections import namedtuple
 
 
 def get_parser():
+    """
+    Parser for IAM main.
+    Takes IAM-path, train/test mode and debug mode as args.
+
+    :return: parser with args
+    """
     parser = argparse.ArgumentParser(description="args for IAM main")
     parser.add_argument('path', type=str, nargs='?', default=None, help="path to 'IAM-data'")
     parser.add_argument('--mode', type=str, choices=['train', 'test'], default='test', help="train or test model")
@@ -24,7 +30,7 @@ def make_dirs(root_dir: Path) -> NamedTuple:
     Create folders for results at root_dir.
 
     :param root_dir: folder iam_results
-    :return: paths to logs, models, checkpoints
+    :return: paths to logs, models, checkpoints, & settings
     """
     PathTuple = namedtuple("paths",  "logs model checkpoint settings")
     timestamp = time.strftime("_%Y_%m_%d-%H_%M_%S")
