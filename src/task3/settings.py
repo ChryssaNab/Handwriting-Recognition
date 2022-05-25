@@ -14,7 +14,7 @@ def get_lstm_settings(debug: bool = False) -> dict:
     settings = {
 
         # Training
-        "epochs":           10,
+        "epochs":           100,
         "batch_size":       24,
         "learning_rate":    0.001,
         "optimizer":        "RMSprop",
