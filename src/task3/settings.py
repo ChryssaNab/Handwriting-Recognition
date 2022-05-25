@@ -54,7 +54,7 @@ def get_lstm_settings(debug: bool = False) -> dict:
     }
 
     if debug:
-        settings["epochs"] = 1
+        settings["epochs"] = 2
         settings["model_name"] += "_debug"
         settings["debug"] = True
 

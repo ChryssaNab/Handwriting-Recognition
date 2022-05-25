@@ -4,7 +4,6 @@ Train and test a model on the IAM dataset.
 
 ################################################## DEBUGGING ###########################################################
 
-DEBUG = 1
 GPU_OFF = 1
 
 if GPU_OFF:
@@ -20,13 +19,13 @@ from pathlib import Path
 from jiwer import wer, cer
 
 from settings import get_lstm_settings, save_settings, load_settings
-from data import load_data_dict, load_dataset, train_test_split, filter_labels, to_dict, from_dict
+from data import load_data_dict, load_dataset, split_data_dict, train_test_split, filter_labels, to_dict, from_dict
 from data import tokens_from_text, get_full_token_set
 from preprocessing import invert_color, distortion_free_resize, scale_img
 from preprocessing import LabelEncoder, LabelPadding
-from model import build_LSTM_model, remove_ctc_loss_layer
+from model import build_lstm_model, remove_ctc_loss_layer
 from metrics import ErrorRateCallback
-from utils import make_dirs, track_time
+from utils import get_parser, make_dirs, track_time
 
 # Set path to the IAM folder
 #local_path_to_iam = "C:\\Users\\Luca\\Desktop\\HWR"
@@ -37,9 +36,16 @@ local_path_to_iam = "C:\\Users\\muell\\Desktop\\HWR\\Task 3\\Data"
 def main():
     global local_path_to_iam
 
-    # IAM path from cmd line
-    if len(sys.argv) > 1:
-        local_path_to_iam = str(sys.argv[1])
+    # cmd args
+    parser = get_parser()
+    args = parser.parse_args()
+
+    # TODO: make separate train / test loop
+    mode = args.mode
+    debug = args.debug
+
+    if args.path is not None:
+        local_path_to_iam = args.path
 
     # IAM data
     data_dir = Path(local_path_to_iam) / "IAM-data"
@@ -51,7 +57,7 @@ def main():
     paths = make_dirs(root_dir)
 
     # Load & save settings
-    s = get_lstm_settings(debug=bool(DEBUG))
+    s = get_lstm_settings(debug=bool(debug))
     save_settings(s, paths.settings)
 
     # Model settings
@@ -100,7 +106,7 @@ def main():
     train_ds, val_ds = train_test_split(train_ds, train_size=s["validation_split"], shuffle=True)
 
     # Model for training
-    train_model = build_LSTM_model(len(tokens), image_width)
+    train_model = build_lstm_model(len(tokens), image_width)
     train_model.compile(optimizer=optimizer)
     print(train_model.summary())
 
@@ -108,7 +114,7 @@ def main():
     final_model = remove_ctc_loss_layer(train_model, model_name)
 
     # Callbacks
-    error_cb = ErrorRateCallback(val_ds, label_encoder, label_padding, log_dir=paths.logs)
+    error_cb = ErrorRateCallback(val_ds, label_encoder, label_padding, log_dir=paths.logs / "validation")
     tensorboard_cb = tf.keras.callbacks.TensorBoard(log_dir=paths.logs)
     checkpoint_cb = tf.keras.callbacks.ModelCheckpoint(paths.checkpoint / f"{model_name}_checkpoint.h5")
     early_stopping_cb = tf.keras.callbacks.EarlyStopping(patience=10, restore_best_weights=True)
@@ -130,7 +136,7 @@ def main():
     # Test
     batch = val_ds.take(1)
     y_pred = final_model.predict(val_ds.map(filter_labels))
-    y_pred = tf.convert_to_tensor(y_pred, dtype=tf.int64)
+    y_pred = tf.convert_to_tensor(y_pred, dtype="int32")
     for i, sample in iter(batch.unbatch().enumerate()):
         img, y_true = sample["Image"], sample["Label"]
         y_true = label_padding.remove(y_true)

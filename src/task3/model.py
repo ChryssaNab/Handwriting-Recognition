@@ -65,7 +65,7 @@ class CTCDecodingLayer(tf.keras.layers.Layer):
 
 
 # TODO: regularization (e.g. dropout)
-def build_LSTM_model(n_classes: int, width: int = 800) -> tf.keras.Model:
+def build_lstm_model(n_classes: int, width: int = 800) -> tf.keras.Model:
     """
     Model architecture adapted from:
     Handwritten Text Recognition in Historical Documents, p.38
