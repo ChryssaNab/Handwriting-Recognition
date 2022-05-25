@@ -72,6 +72,15 @@ def split_data_dict(data_dict: Dict[str, str],
                     validation_split: float = 0.9,
                     shuffle: bool = False,
                     ) -> Tuple[dict, dict, dict]:
+    """
+    Split data dict into train, validation and test set.
+
+    :param data_dict: full IAM data dict
+    :param test_split: relative test size (taken from whole dataset)
+    :param validation_split: relative validation set size (taken from train dataset)
+    :param shuffle: shuffle dict after test / before validation split
+    :return: tuple (train_data, validation_data, test_data)
+    """
 
     import random
     assert 0.0 < test_split < 1.0, f"Expected train_size to be a float in range (0.0, 1.0), got {test_split} instead."
@@ -88,7 +97,6 @@ def split_data_dict(data_dict: Dict[str, str],
     return train_data, validation_data, test_data
 
 
-
 def train_test_split(dataset: tf.data.Dataset,
                      train_size: float = 0.8,
                      shuffle: bool = False,
@@ -99,7 +107,7 @@ def train_test_split(dataset: tf.data.Dataset,
     :param dataset: full IAM dataset
     :param train_size: float (0.0, 1.0) determining test split
     :param shuffle: if 'True' shuffle dataset before split
-    :return:
+    :return: train and test dataset
     """
 
     assert 0.0 < train_size < 1.0, f"Expected train_size to be a float in range (0.0, 1.0), got {train_size} instead."
@@ -126,7 +134,7 @@ def filter_labels(sample: Union[tf.Tensor, Dict[str, tf.Tensor]], *args) -> tf.T
     return sample
 
 
-def to_dict(x: tf.Tensor, y: tf.Tensor, x_key: str = "Image", y_key: str = "Label") -> dict:
+def to_dict(x: tf.Tensor, y: tf.Tensor, x_key: str = "Image", y_key: str = "Label") -> Dict[str, tf.Tensor]:
     """
     Combine two tensors into a dict.
 
