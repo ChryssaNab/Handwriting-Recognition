@@ -25,12 +25,13 @@ class CTCLossLayer(tf.keras.layers.Layer):
         """
 
         y_true, y_pred = X
-        batch_length = tf.cast(tf.shape(y_true)[0], dtype="int64")
-        input_length = tf.cast(tf.shape(y_pred)[1], dtype="int64")
-        label_length = tf.cast(tf.shape(y_true)[1], dtype="int64")
+        y_true = tf.cast(y_true, dtype="int64")
+        batch_length = tf.cast(tf.shape(y_true)[0], dtype="int32")
+        input_length = tf.cast(tf.shape(y_pred)[1], dtype="int32")
+        label_length = tf.cast(tf.shape(y_true)[1], dtype="int32")
 
-        input_length = input_length * tf.ones(shape=(batch_length, 1), dtype="int64")
-        label_length = label_length * tf.ones(shape=(batch_length, 1), dtype="int64")
+        input_length = input_length * tf.ones(shape=(batch_length, 1), dtype="int32")
+        label_length = label_length * tf.ones(shape=(batch_length, 1), dtype="int32")
         loss = self.loss_fn(y_true, y_pred, input_length, label_length)
         self.add_loss(loss)
 
@@ -55,9 +56,9 @@ class CTCDecodingLayer(tf.keras.layers.Layer):
         :return: tensor with decoded predictions
         """
 
-        batch_length = tf.cast(tf.shape(y_pred)[0], dtype="int64")
-        input_length = tf.cast(tf.shape(y_pred)[1], dtype="int64")
-        input_length = input_length * tf.ones(shape=batch_length, dtype="int64")
+        batch_length = tf.cast(tf.shape(y_pred)[0], dtype="int32")
+        input_length = tf.cast(tf.shape(y_pred)[1], dtype="int32")
+        input_length = input_length * tf.ones(shape=batch_length, dtype="int32")
 
         output = self.decode_fn(y_pred, input_length, greedy=True, beam_width=100, top_paths=1)
         return output[0][0]
@@ -87,7 +88,7 @@ def build_LSTM_model(n_classes: int, width: int = 800) -> tf.keras.Model:
 
     # input
     input_img = tf.keras.Input(shape=(width, height, channels), name="Image")
-    input_label = tf.keras.layers.Input(name="Label", shape=(None,))
+    input_label = tf.keras.layers.Input(name="Label", shape=(None,), dtype="int32")
 
     # convolution
     conv = tf.keras.layers.Conv2D(64, 5, padding="same", activation="relu", name="Conv_1")(input_img)
@@ -126,11 +127,11 @@ def build_LSTM_model(n_classes: int, width: int = 800) -> tf.keras.Model:
 
 
 def remove_ctc_loss_layer(train_model: tf.keras.Model,
-                        model_name: str,
-                        input_layer: str = "Image",
-                        softmax_layer: str = "Output_Softmax",
-                        decoding_layer: str = "CTC_Decoding",
-                        ) -> tf.keras.Model:
+                          model_name: str,
+                          input_layer: str = "Image",
+                          softmax_layer: str = "Output_Softmax",
+                          decoding_layer: str = "CTC_Decoding",
+                          ) -> tf.keras.Model:
     """
     Remove CTC loss layer by connecting the softmax layer to  the CTC decoding layer.
 
