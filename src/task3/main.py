@@ -14,7 +14,6 @@ if GPU_OFF:
 ########################################################################################################################
 
 import sys
-import json
 import tensorflow as tf
 
 from pathlib import Path
@@ -52,10 +51,8 @@ def main():
     paths = make_dirs(root_dir)
 
     # Load & save settings
-    s = get_lstm_settings(debug=DEBUG)
+    s = get_lstm_settings(debug=bool(DEBUG))
     save_settings(s, paths.settings)
-
-    exit()
 
     # Model settings
     epochs = s["epochs"]
@@ -111,7 +108,7 @@ def main():
     final_model = remove_ctc_loss_layer(train_model, model_name)
 
     # Callbacks
-    error_cb = ErrorRateCallback(val_ds, label_encoder, label_padding)
+    error_cb = ErrorRateCallback(val_ds, label_encoder, label_padding, log_dir=paths.logs)
     tensorboard_cb = tf.keras.callbacks.TensorBoard(log_dir=paths.logs)
     checkpoint_cb = tf.keras.callbacks.ModelCheckpoint(paths.checkpoint / f"{model_name}_checkpoint.h5")
     early_stopping_cb = tf.keras.callbacks.EarlyStopping(patience=10, restore_best_weights=True)
@@ -129,8 +126,6 @@ def main():
                               epochs=epochs,
                               callbacks=callbacks,
                               )
-
-    print(history.history)
 
     # Test
     batch = val_ds.take(1)
