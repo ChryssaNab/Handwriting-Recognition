@@ -31,7 +31,7 @@ def load_data_dict(data_dir: Path) -> dict:
     return data_dict
 
 
-def load_dataset(data_dict: dict, img_dir: Path, return_filenames: bool = False) -> tf.data.Dataset:
+def load_dataset(data_dict: Dict[str, str], img_dir: Path, return_filenames: bool = False) -> tf.data.Dataset:
     """
     Build a tf.data.Dataset from image names and labels.
     Data is not preprocessed.
@@ -65,6 +65,28 @@ def load_dataset(data_dict: dict, img_dir: Path, return_filenames: bool = False)
     dataset = tf.data.Dataset.zip((images, files, labels))
 
     return dataset
+
+
+def split_data_dict(data_dict: Dict[str, str],
+                    test_split: float = 0.85,
+                    validation_split: float = 0.9,
+                    shuffle: bool = False,
+                    ) -> Tuple[dict, dict, dict]:
+
+    import random
+    assert 0.0 < test_split < 1.0, f"Expected train_size to be a float in range (0.0, 1.0), got {test_split} instead."
+
+    items = list(data_dict.items())
+    test_idx = int(test_split * len(items))
+    train_data, test_data = items[:test_idx], items[test_idx:]
+    if shuffle:
+        random.shuffle(train_data)
+    validation_idx = int(validation_split * len(train_data))
+    train_data, validation_data = train_data[:validation_idx], train_data[validation_idx:]
+    train_data, validation_data, test_data = dict(train_data), dict(validation_data), dict(test_data)
+
+    return train_data, validation_data, test_data
+
 
 
 def train_test_split(dataset: tf.data.Dataset,
