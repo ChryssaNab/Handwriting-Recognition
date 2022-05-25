@@ -19,8 +19,18 @@ def get_lstm_settings(debug: bool = False) -> dict:
         # Training
         "epochs":           100,
         "batch_size":       24,
-        "learning_rate":    0.001,
-        "optimizer":        "RMSprop",
+        "optimizer":        {
+                             'class_name':  'RMSprop',
+                             'config':      {
+                                             'name':            'RMSprop',
+                                             'learning_rate':   0.001,
+                                             'decay':           0.0,
+                                             'rho':             0.9,
+                                             'momentum':        0.0,
+                                             'epsilon':         1e-07,
+                                             'centered':        False,
+                                            },
+                            },
 
         # Image size
         "image_width":      800,
@@ -40,7 +50,7 @@ def get_lstm_settings(debug: bool = False) -> dict:
         "model_name":       "LSTM_model",
 
         # Debug mode
-        "debug":            False
+        "debug":            False,
     }
 
     if debug:
