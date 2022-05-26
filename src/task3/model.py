@@ -127,6 +127,7 @@ def build_lstm_model(n_classes: int, width: int = 800) -> tf.keras.Model:
     input_label = tf.keras.layers.Input(name="Label", shape=(None,), dtype="int32")
 
     # convolution
+    input_img = data_augment()(input_img)
     conv = tf.keras.layers.Conv2D(64, 5, padding="same", activation="relu", name="Conv_1")(input_img)
     conv = tf.keras.layers.MaxPool2D(padding="same", name="MaxPool_1")(conv)
     conv = tf.keras.layers.Conv2D(128, 5, padding="same", activation="relu", name="Conv_2")(conv)
