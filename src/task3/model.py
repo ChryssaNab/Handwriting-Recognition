@@ -74,7 +74,7 @@ def build_lstm_model(n_classes: int, width: int = 800) -> tf.keras.Model:
     Uses n_classes + 2 outputs:
     https://git.io/J0eXP
 
-    :param n_classes: number of classes to predict (i.e. number of characters), n_classes < 100
+    :param n_classes: number of classes to predict (i.e. number of characters), n_classes less than 100
     :param width: width of input image
     :return: the model
     """

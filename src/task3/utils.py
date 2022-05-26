@@ -11,7 +11,7 @@ from typing import NamedTuple, Dict, Union
 from collections import namedtuple
 
 
-def get_parser():
+def get_parser() -> argparse.ArgumentParser:
     """
     Parser for IAM main.
     Takes IAM-path, train/test mode and debug mode as args.
@@ -20,8 +20,9 @@ def get_parser():
     """
     parser = argparse.ArgumentParser(description="args for IAM main")
     parser.add_argument('path', type=str, nargs='?', default=None, help="path to 'IAM-data'")
-    parser.add_argument('--mode', type=str, choices=['train', 'test'], default='test', help="train or test model")
-    parser.add_argument('--debug', action='store_true', help="use debug mode", default=False)
+    parser.add_argument('--mode', type=str, choices=['train', 'test'], default='test',
+                        help="train or test model (default test)")
+    parser.add_argument('--debug', action='store_true', default=False, help="use debug mode (default False)")
     return parser
 
 
@@ -33,7 +34,7 @@ def make_dirs(root_dir: Path) -> NamedTuple:
     :return: paths to logs, models, checkpoints, & settings
     """
     PathTuple = namedtuple("paths",  "logs model checkpoint settings")
-    timestamp = time.strftime("_%Y_%m_%d-%H_%M_%S")
+    timestamp = time.strftime("%Y_%m_%d-%H_%M_%S")
     run_dir = root_dir / f"run_{timestamp}"
     run_dir.mkdir(parents=True)
     logs = run_dir / "logs"
