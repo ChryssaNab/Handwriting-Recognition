@@ -169,25 +169,17 @@ def tokens_from_text(text: str) -> List[str]:
     return sorted(list(set(text)))
 
 
-def get_full_token_set():
+def get_full_token_set() -> List[str]:
     """
     Get a token set with all common characters.
 
-    :return: list of tokens, class of special tokens
+    :return: list of tokens
     """
 
-    class SpecialTokens:
-        BLANK = "[CTCblank]"
-        PAD = "<PAD>"
-        SOS = "<SOS>"
-        EOS = "<EOS>"
-        UNK = "<UNK>"
-
-    tokens = [SpecialTokens.PAD, SpecialTokens.SOS, SpecialTokens.EOS, SpecialTokens.UNK,
-              '!', '"', '#', '$', '%', '&', "'", '(', ')', '*', '+', ',', '-', '.', '/', ':', ';', '<', '=', '>',
+    tokens = ['!', '"', '#', '$', '%', '&', "'", '(', ')', '*', '+', ',', '-', '.', '/', ':', ';', '<', '=', '>',
               '?', '@', '[', '\\', ']', '^', '_', '`', '{', '|', '}', '~', 'a',  'b', 'c', 'd', 'e', 'f', 'g', 'h',
               'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',  'v', 'w', 'x', 'y', 'z', 'A', 'B',
               'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
-              'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ' ', SpecialTokens.BLANK]
+              'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ' ']
 
-    return tokens, SpecialTokens
+    return tokens
