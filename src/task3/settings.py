@@ -4,9 +4,10 @@ Settings for IAM main
 
 import json
 from pathlib import Path
+from typing import Dict, Any
 
 
-def get_lstm_settings(debug: bool = False) -> dict:
+def get_lstm_settings(debug: bool = False) -> Dict[str, Any]:
     """
     Settings for the LSTM model.
 
@@ -23,7 +24,7 @@ def get_lstm_settings(debug: bool = False) -> dict:
                              'class_name':  'RMSprop',
                              'config':      {
                                              'name':            'RMSprop',
-                                             'learning_rate':   0.001,
+                                             'learning_rate':   0.0025,
                                              'decay':           0.0,
                                              'rho':             0.9,
                                              'momentum':        0.0,
@@ -61,7 +62,7 @@ def get_lstm_settings(debug: bool = False) -> dict:
     return settings
 
 
-def save_settings(settings: dict, path: Path, filename: str = None):
+def save_settings(settings: dict, path: Path, filename: str = None) -> None:
     """
     Save settings dict as json file.
 
@@ -76,7 +77,7 @@ def save_settings(settings: dict, path: Path, filename: str = None):
         json.dump(settings, f)
 
 
-def load_settings(path: Path) -> dict:
+def load_settings(path: Path) -> Dict[str, Any]:
     """
     Load settings as dict from json file.
 

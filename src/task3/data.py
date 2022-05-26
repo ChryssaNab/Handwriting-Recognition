@@ -7,7 +7,7 @@ from typing import Tuple, List, Dict, Union
 from pathlib import Path
 
 
-def load_data_dict(data_dir: Path) -> dict:
+def load_data_dict(data_dir: Path) -> Dict[str, str]:
     """
     Returns dictionary with filenames as keys and labels as values.
 
