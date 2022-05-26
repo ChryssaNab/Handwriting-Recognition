@@ -4,7 +4,7 @@ Train and test a model on the IAM dataset.
 
 ################################################## DEBUGGING ###########################################################
 
-GPU_OFF = 1
+GPU_OFF = 0
 
 if GPU_OFF:
     import os
@@ -27,8 +27,8 @@ from metrics import ErrorRateCallback
 from utils import get_parser, make_dirs, track_time
 
 # Set path to the IAM folder
-#local_path_to_iam = "C:\\Users\\Luca\\Desktop\\HWR"
-local_path_to_iam = "C:\\Users\\muell\\Desktop\\HWR\\Task 3\\Data"
+local_path_to_iam = "C:\\Users\\Luca\\Desktop\\HWR"
+#local_path_to_iam = "C:\\Users\\muell\\Desktop\\HWR\\Task 3\\Data"
 
 
 @track_time
@@ -47,12 +47,16 @@ def main():
         local_path_to_iam = args.path
 
     # IAM data
-    data_dir = Path(local_path_to_iam) / "IAM-data"
+    data_dir = Path(local_path_to_iam)
+    if data_dir.name != "IAM-data":
+        data_dir = data_dir / "IAM-data"
+    if not data_dir.exists():
+        raise FileNotFoundError(f"Path {str(data_dir)} does not exist.")
     img_dir = data_dir / "img"
 
     # Create paths for logs, models, checkpoints
     print("Setting up results folder...")
-    root_dir = Path(".") / "iam_results"
+    root_dir = Path("../") / "iam_results"
     paths = make_dirs(root_dir)
 
     # Load & save settings
@@ -109,9 +113,6 @@ def main():
     train_model.compile(optimizer=optimizer)
     print(train_model.summary())
 
-    # Remove loss layer after training
-    final_model = remove_ctc_loss_layer(train_model, model_name)
-
     # Callbacks
     error_cb = ErrorRateCallback(val_ds, label_encoder, label_padding, log_dir=paths.logs / "validation")
     tensorboard_cb = tf.keras.callbacks.TensorBoard(log_dir=paths.logs)
@@ -131,6 +132,9 @@ def main():
                               epochs=epochs,
                               callbacks=callbacks,
                               )
+
+    # Remove loss layer after training
+    final_model = remove_ctc_loss_layer(train_model, model_name)
 
     # Test
     batch = val_ds.take(1)
