@@ -55,6 +55,7 @@ class ErrorRateCallback(tf.keras.callbacks.Callback):
             self.writer = self.writer = tf.summary.create_file_writer(logdir=str(self.log_dir), name="validation")
 
     def on_epoch_end(self, epoch: int, logs: dict = None) -> None:
+        epoch += 1
         wer_epoch = []
         cer_epoch = []
 

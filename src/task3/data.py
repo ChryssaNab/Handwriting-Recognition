@@ -84,6 +84,8 @@ def split_data_dict(data_dict: Dict[str, str],
 
     import random
     assert 0.0 < test_split < 1.0, f"Expected train_size to be a float in range (0.0, 1.0), got {test_split} instead."
+    assert 0.0 < validation_split < 1.0, f"Expected train_size to be a float in range (0.0, 1.0), " \
+                                         f"got {validation_split} instead."
 
     items = list(data_dict.items())
     test_idx = int(test_split * len(items))
