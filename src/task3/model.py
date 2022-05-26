@@ -3,7 +3,7 @@ Model architectures for IAM
 """
 
 import tensorflow as tf
-from typing import Tuple, List
+from typing import Tuple, List, Dict, Any
 
 
 class CTCLossLayer(tf.keras.layers.Layer):
@@ -30,7 +30,7 @@ class CTCLossLayer(tf.keras.layers.Layer):
         :return: model output
         """
         y_true, y_pred = X
-        y_true = tf.cast(y_true, dtype="int64")
+        y_true = tf.cast(y_true, dtype="int32")
         batch_length = tf.cast(tf.shape(y_true)[0], dtype="int32")
         input_length = tf.cast(tf.shape(y_pred)[1], dtype="int32")
         label_length = tf.cast(tf.shape(y_true)[1], dtype="int32")
@@ -50,7 +50,7 @@ class CTCDecodingLayer(tf.keras.layers.Layer):
     """
 
     def __init__(self,
-                 greedy: bool = False,
+                 greedy: bool = True,
                  beam_width: int = 100,
                  top_paths: int = 1,
                  name: str = "CTC_Decoding",
@@ -59,7 +59,7 @@ class CTCDecodingLayer(tf.keras.layers.Layer):
         """
         Takes kwargs for CTC decoder and base class.
 
-        :param greedy: use greedy search to find best path
+        :param greedy: use greedy search to find best path (default)
         :param beam_width: beam width for decoder if greedy is 'False'
         :param top_paths: number of (best) paths returned by layer
         :param name: name of layer
@@ -85,6 +85,20 @@ class CTCDecodingLayer(tf.keras.layers.Layer):
         output = self.decode_fn(y_pred, input_length,
                                 greedy=self.greedy, beam_width=self.beam_width, top_paths=self.top_paths)
         return output[0][0]
+
+    def get_config(self) -> Dict[str, Any]:
+        """
+        Override to allow serialization of layer.
+
+        :return: config
+        """
+        config = super().get_config().copy()
+        config.update({
+            'greedy': self.greedy,
+            'bean_width': self.beam_width,
+            'top_paths': self.top_paths,
+        })
+        return config
 
 
 def build_lstm_model(n_classes: int, width: int = 800) -> tf.keras.Model:
@@ -128,21 +142,18 @@ def build_lstm_model(n_classes: int, width: int = 800) -> tf.keras.Model:
     conv = tf.keras.layers.BatchNormalization(name="BatchNorm_2")(conv)
     conv = tf.keras.layers.Conv2D(512, 3, padding="same", activation="relu", name="Conv_7")(conv)
     conv = tf.keras.layers.MaxPool2D(pool_size=(1, 2), padding="same", name="MaxPool_6")(conv)
-    conv = tf.keras.layers.Dropout(0.3, name="Dropout_1")(conv)
 
     # lstm
     flat = tf.keras.layers.Reshape((logit_length, 512), name="Collapse")(conv)
-    lstm = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(512, activation='tanh', return_sequences=True),
+    lstm = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(512, return_sequences=True, dropout=0.1),
                                          name="BiDir_LSTM_1")(flat)
-    lstm = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(512, activation='tanh', return_sequences=True),
-                                         name="BiDir_LSTM_2")(lstm)
+    lstm = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(512, return_sequences=True), name="BiDir_LSTM_2")(lstm)
     lstm = tf.keras.layers.Dense(n_classes + 2, activation=None, name="Output_Dense")(lstm)
-    lstm = tf.keras.layers.Dropout(0.1)(lstm)
 
     # output
     softmax = tf.keras.layers.Softmax(axis=-1, name="Output_Softmax")(lstm)
     output = CTCLossLayer(name="CTC_Loss")((input_label, softmax))
-    output = CTCDecodingLayer(name="CTC_Decoding")(output)
+    output = CTCDecodingLayer(name="CTC_Decoding", greedy=False)(output)
 
     # build model
     model = tf.keras.models.Model(inputs=[input_img, input_label], outputs=output, name="LSTM_model")
