@@ -13,6 +13,12 @@ class CTCLossLayer(tf.keras.layers.Layer):
     """
 
     def __init__(self, name: str = "CTC_Loss", **kwargs) -> None:
+        """
+        Takes kwargs for base class.
+
+        :param name: name of layer
+        :param kwargs: kwargs for base class
+        """
         super().__init__(name=name, trainable=False, **kwargs)
         self.loss_fn = tf.keras.backend.ctc_batch_cost
 
@@ -23,7 +29,6 @@ class CTCLossLayer(tf.keras.layers.Layer):
         :param X: tuple (label, model output)
         :return: model output
         """
-
         y_true, y_pred = X
         y_true = tf.cast(y_true, dtype="int64")
         batch_length = tf.cast(tf.shape(y_true)[0], dtype="int32")
@@ -44,9 +49,27 @@ class CTCDecodingLayer(tf.keras.layers.Layer):
     https://docs.w3cub.com/tensorflow~python/tf/keras/backend/ctc_decode.html
     """
 
-    def __init__(self, name: str = "CTC_Decoding", **kwargs) -> None:
+    def __init__(self,
+                 greedy: bool = False,
+                 beam_width: int = 100,
+                 top_paths: int = 1,
+                 name: str = "CTC_Decoding",
+                 **kwargs,
+                 ) -> None:
+        """
+        Takes kwargs for CTC decoder and base class.
+
+        :param greedy: use greedy search to find best path
+        :param beam_width: beam width for decoder if greedy is 'False'
+        :param top_paths: number of (best) paths returned by layer
+        :param name: name of layer
+        :param kwargs: kwargs for base class
+        """
         super().__init__(name=name, trainable=False, **kwargs)
         self.decode_fn = tf.keras.backend.ctc_decode
+        self.greedy = greedy
+        self.beam_width = beam_width
+        self.top_paths = top_paths
 
     def call(self, y_pred: tf.Tensor) -> List[List[int]]:
         """
@@ -55,16 +78,15 @@ class CTCDecodingLayer(tf.keras.layers.Layer):
         :param y_pred: model output (batch_size, logits, n_chars)
         :return: tensor with decoded predictions
         """
-
         batch_length = tf.cast(tf.shape(y_pred)[0], dtype="int32")
         input_length = tf.cast(tf.shape(y_pred)[1], dtype="int32")
         input_length = input_length * tf.ones(shape=batch_length, dtype="int32")
 
-        output = self.decode_fn(y_pred, input_length, greedy=True, beam_width=100, top_paths=1)
+        output = self.decode_fn(y_pred, input_length,
+                                greedy=self.greedy, beam_width=self.beam_width, top_paths=self.top_paths)
         return output[0][0]
 
 
-# TODO: regularization (e.g. dropout)
 def build_lstm_model(n_classes: int, width: int = 800) -> tf.keras.Model:
     """
     Model architecture adapted from:
@@ -79,12 +101,12 @@ def build_lstm_model(n_classes: int, width: int = 800) -> tf.keras.Model:
     :return: the model
     """
 
+    if width % 4:
+        raise ValueError("input width not divisible by 4")
+
     # input dimensions
     height, channels = 64, 1
     logit_length = width // 4
-
-    if width % logit_length:
-        raise ValueError("input width not divisible by 4")
 
     # input
     input_img = tf.keras.Input(shape=(width, height, channels), name="Image")
@@ -106,7 +128,7 @@ def build_lstm_model(n_classes: int, width: int = 800) -> tf.keras.Model:
     conv = tf.keras.layers.BatchNormalization(name="BatchNorm_2")(conv)
     conv = tf.keras.layers.Conv2D(512, 3, padding="same", activation="relu", name="Conv_7")(conv)
     conv = tf.keras.layers.MaxPool2D(pool_size=(1, 2), padding="same", name="MaxPool_6")(conv)
-    conv = tf.keras.layers.Dropout(0.4, name="Dropout_1")(conv)
+    conv = tf.keras.layers.Dropout(0.3, name="Dropout_1")(conv)
 
     # lstm
     flat = tf.keras.layers.Reshape((logit_length, 512), name="Collapse")(conv)
@@ -115,6 +137,7 @@ def build_lstm_model(n_classes: int, width: int = 800) -> tf.keras.Model:
     lstm = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(512, activation='tanh', return_sequences=True),
                                          name="BiDir_LSTM_2")(lstm)
     lstm = tf.keras.layers.Dense(n_classes + 2, activation=None, name="Output_Dense")(lstm)
+    lstm = tf.keras.layers.Dropout(0.1)(lstm)
 
     # output
     softmax = tf.keras.layers.Softmax(axis=-1, name="Output_Softmax")(lstm)
@@ -143,7 +166,6 @@ def remove_ctc_loss_layer(train_model: tf.keras.Model,
     :param decoding_layer: name of decoding layer
     :return: model without CTC loss layer
     """
-
     softmax = train_model.get_layer(name=softmax_layer).output
     output = train_model.get_layer(name=decoding_layer)(softmax)
     final_model = tf.keras.models.Model(

@@ -22,10 +22,11 @@ class ErrorRateCallback(tf.keras.callbacks.Callback):
                  log_dir: str = None,
                  ctc_blank: int = -1,
                  clip_wer: float = 2.0,
-                 clip_cer: float = 3.0,
+                 clip_cer: float = 1.5,
                  ) -> None:
         """
         Needs extra utilities to remove padding and decode labels.
+        Clip values are needed since outliers make the histogram unreadable.
 
         :param val_ds: validation data
         :param label_encoder: to decode labels
@@ -54,7 +55,6 @@ class ErrorRateCallback(tf.keras.callbacks.Callback):
             self.writer = self.writer = tf.summary.create_file_writer(logdir=str(self.log_dir), name="validation")
 
     def on_epoch_end(self, epoch: int, logs: dict = None) -> None:
-        epoch += 1
         wer_epoch = []
         cer_epoch = []
 
