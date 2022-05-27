@@ -4,6 +4,7 @@ Model architectures for IAM
 
 import tensorflow as tf
 from typing import Tuple, List, Dict, Any
+from augmentation import data_augment
 
 
 class CTCLossLayer(tf.keras.layers.Layer):
