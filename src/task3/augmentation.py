@@ -2,15 +2,20 @@
 Data augmentation tools for IAM
 """
 
-import tensorflow as tf
-from tensorflow.keras import layers
+from tensorflow.keras import Sequential, layers
+
 
 def data_augment():
-    data_augmentation = tf.keras.Sequential([
-        # layers.RandomBrightness(-.5,0.5),
-        layers.RandomRotation(0.2),
-        layers.RandomContrast(0.5)
-    ])
-    return data_augmentation
+    """
+    Data augmentation for images.
 
-# TODO: add data augmentation tools
+    :return: augmentation layers as Sequential model
+    """
+
+    data_augmentation = Sequential([
+        layers.RandomTranslation(0.1, 0.1, fill_mode="constant", fill_value=0.0),
+        layers.RandomRotation(0.1),
+        layers.RandomContrast(0.5),
+        layers.GaussianNoise(0.1),
+    ], name="Data_Augmentation")
+    return data_augmentation

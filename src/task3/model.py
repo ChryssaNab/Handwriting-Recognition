@@ -128,8 +128,8 @@ def build_lstm_model(n_classes: int, width: int = 800) -> tf.keras.Model:
     input_label = tf.keras.layers.Input(name="Label", shape=(None,), dtype="int32")
 
     # convolution
-    input_img = data_augment()(input_img)
-    conv = tf.keras.layers.Conv2D(64, 5, padding="same", activation="relu", name="Conv_1")(input_img)
+    aug_img = data_augment()(input_img)
+    conv = tf.keras.layers.Conv2D(64, 5, padding="same", activation="relu", name="Conv_1")(aug_img)
     conv = tf.keras.layers.MaxPool2D(padding="same", name="MaxPool_1")(conv)
     conv = tf.keras.layers.Conv2D(128, 5, padding="same", activation="relu", name="Conv_2")(conv)
     conv = tf.keras.layers.MaxPool2D(pool_size=(1, 2), padding="same", name="MaxPool_2")(conv)
@@ -155,7 +155,7 @@ def build_lstm_model(n_classes: int, width: int = 800) -> tf.keras.Model:
     # output
     softmax = tf.keras.layers.Softmax(axis=-1, name="Output_Softmax")(lstm)
     output = CTCLossLayer(name="CTC_Loss")((input_label, softmax))
-    output = CTCDecodingLayer(name="CTC_Decoding", greedy=False)(output)
+    output = CTCDecodingLayer(name="CTC_Decoding", greedy=True)(output)
 
     # build model
     model = tf.keras.models.Model(inputs=[input_img, input_label], outputs=output, name="LSTM_model")
