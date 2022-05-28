@@ -61,7 +61,7 @@ def track_time(func):
         end = time.time()
         duration = (end - begin)
         print(f"Total time taken in function '{func.__name__}': "
-              f"{duration // 60**2}h {(duration // 60) % 60**2}m {(duration % 60):.2f}s")
+              f"{duration // 60**2}h {(duration // 60) % 60}m {(duration % 60):.2f}s")
 
     return _inner
 
