@@ -83,19 +83,6 @@ def scale_img(image: tf.Tensor) -> tf.Tensor:
     return tf.cast(image, tf.float32) / 255.
 
 
-def remove_filenames(dataset: tf.data.Dataset) -> tf.data.Dataset:
-    """
-    Remove filenames from dataset. By default the IAM dataset does not
-    contain filenames.
-
-    :param dataset: IAM dataset with (images, filenames, labels)
-    :return: IAM dataset with (images, labels)
-    """
-    x = dataset.map(lambda x, f, y: x)
-    y = dataset.map(lambda x, f, y: y)
-    return tf.data.Dataset.zip((x, y))
-
-
 class LabelEncoder:
     """
     Encode labels from string to int and back.

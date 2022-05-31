@@ -67,6 +67,19 @@ def load_dataset(data_dict: Dict[str, str], img_dir: Path, return_filenames: boo
     return dataset
 
 
+def remove_filenames(dataset: tf.data.Dataset) -> tf.data.Dataset:
+    """
+    Remove filenames from dataset. By default the IAM dataset does not
+    contain filenames.
+
+    :param dataset: IAM dataset with (images, filenames, labels)
+    :return: IAM dataset with (images, labels)
+    """
+    x = dataset.map(lambda x, y, f: x)
+    y = dataset.map(lambda x, y, f: y)
+    return tf.data.Dataset.zip((x, y))
+
+
 def split_data_dict(data_dict: Dict[str, str],
                     test_split: float = 0.85,
                     validation_split: float = 0.9,
