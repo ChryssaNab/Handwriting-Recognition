@@ -38,7 +38,7 @@ def load_dataset(data_dict: Dict[str, str], img_dir: Path, return_filenames: boo
 
     :param data_dict: dict {filename: label}
     :param img_dir: path to IAM images
-    :param return_filenames: if 'True' return tf.data.Dataset (image, filename, label)
+    :param return_filenames: if 'True' return tf.data.Dataset (image, label, filename)
     :return: tf.data.Dataset (image, label)
     """
 
@@ -62,7 +62,7 @@ def load_dataset(data_dict: Dict[str, str], img_dir: Path, return_filenames: boo
 
     # Combine images, filenames and labels
     files = tf.data.Dataset.from_tensor_slices(raw_files)
-    dataset = tf.data.Dataset.zip((images, files, labels))
+    dataset = tf.data.Dataset.zip((images, labels, files))
 
     return dataset
 
@@ -136,17 +136,22 @@ def filter_labels(sample: Union[tf.Tensor, Dict[str, tf.Tensor]], *args) -> tf.T
     return sample
 
 
-def to_dict(x: tf.Tensor, y: tf.Tensor, x_key: str = "Image", y_key: str = "Label") -> Dict[str, tf.Tensor]:
+def to_dict(x: tf.Tensor, y: tf.Tensor, *args,
+            x_key: str = "Image", y_key: str = "Label", **kwargs) -> Dict[str, tf.Tensor]:
     """
     Combine two tensors into a dict.
 
     :param x: x tensor
     :param y: y tensor
+    :param args: other tensors
     :param x_key: name of x category
     :param y_key: name of y category
+    :param kwargs: other categories
     :return: dict {x_key: x, y_key: y}
     """
-    return {x_key: x, y_key: y}
+    d_xy = {x_key: x, y_key: y}
+    d_xy.update(zip(kwargs.values(), args))
+    return d_xy
 
 
 def from_dict(d: dict, x_key: str = "Image", y_key: str = "Label") -> Tuple[tf.Tensor, tf.Tensor]:
