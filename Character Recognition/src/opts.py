@@ -1,3 +1,5 @@
+""" This module includes the path settings. """
+
 import argparse
 
 
@@ -9,9 +11,16 @@ def parse_opts():
     
     parser.add_argument(
         '--data_path',
-        default="/Handwriting Recognition/Assignment/Datasets/DSS/image-data/image-data/",
+        default="/home/chryssa/Desktop/Groningen/RUG/Semester 2b/Handwriting "
+                "Recognition/Assignment/Datasets/DSS/image-data/image-data",
         type=str,
-        help='RGB DDS dataset')
+        help='RGB DSS dataset')
+
+    parser.add_argument(
+        '--ngrams_freq',
+        default="../ngrams_frequencies_withNames.csv",
+        type=str,
+        help='File of n-grams frequencies')
 
     parser.add_argument(
         '--extension',
@@ -21,23 +30,22 @@ def parse_opts():
 
     parser.add_argument(
         '--result_path',
-        default="/Handwriting Recognition/Assignment/Methods/Task1/Results",
+        default="./results",
         type=str,
         help='Results directory path')
-
-    parser.add_argument(
-        '--preprocessing_path',
-        default="preprocessing_output",
-        type=str,
-        help='Save images (.jpg) of pre-processing step')
-
+        
     parser.add_argument(
         '--segmentation_path',
         default="segmentation_output",
         type=str,
         help='Save images (.jpg) of segmentation step')
 
-    # |----------------------------------------- Hyper-parameters -----------------------------------------|
+    parser.add_argument(
+        '--transcript_path',
+        default="transcript_output",
+        type=str,
+        help='Save images (.jpg) of pre-processing step')
+
 
     args = parser.parse_args()
 
