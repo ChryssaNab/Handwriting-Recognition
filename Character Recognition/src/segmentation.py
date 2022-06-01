@@ -90,7 +90,8 @@ def order(img, roi, line_idx, output_file):
         characters = os.path.join(line_path, "character_" + str(i))
         save_image(cnt, characters)
         cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255), 5)
-    cv2.imwrite(output_file + '/final.png', img)
+    final = os.path.join(output_file, "final")
+    save_image(img, final)
 
 
 def segment(segment_output_file, image) -> list:

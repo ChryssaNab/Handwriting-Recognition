@@ -2,7 +2,7 @@
 
 import os
 import cv2
-from pickle5 import pickle
+import pickle
 import numpy as np
 from natsort import natsorted
 from transcript import script
@@ -20,8 +20,8 @@ def network_prediction(character_img, model):
     """
 
     # Reshape character to fit network's input layer
-    character_img = cv2.resize(character_img, (35, 45), interpolation=cv2.INTER_LANCZOS4)
-    character = np.reshape(character_img, (1, 45, 35, 1))
+    character_img = cv2.resize(character_img, (38, 48), interpolation=cv2.INTER_LANCZOS4)
+    character = np.reshape(character_img, (1, 48, 38, 1))
     # Predict character
     predicted = model.predict(character)
     # Get the name of the predicted character

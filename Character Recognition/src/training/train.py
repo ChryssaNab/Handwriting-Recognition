@@ -21,7 +21,7 @@ def preprocessing(img):
     #Augment the image
     img = dataAugmentation.randomaugmentimage(img)
     # Resize image to certain dims (avg dims)
-    img = cv2.resize(img, (35, 45), interpolation=cv2.INTER_AREA)
+    img = cv2.resize(img, (38, 48), interpolation=cv2.INTER_AREA)
     # Convert to single channel
     img = np.dot(img[..., :3], [0.2989, 0.5870, 0.1140])
     # Binarize image for threshold=127
@@ -47,7 +47,7 @@ def load(path):
                 labels_list.append(label)
 
     data = np.array(data)
-    data = data.reshape(data.shape[0], 45, 35, 1)
+    data = data.reshape(data.shape[0], 48, 38, 1)
 
     return data, labels_list
 
