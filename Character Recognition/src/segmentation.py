@@ -26,11 +26,26 @@ def contours_detection(img):
     
     # Extract coordinates of remained contours
     h_list = []
+    total = 0
+    dropout =0
+    for cnt in contours:
+        x, y, w, h = cv2.boundingRect(cnt)
+        if h < THIN_THRESHOLD or w < THIN_THRESHOLD:
+            dropout += 1
+            continue
+        total += w
+    avgw = total / (len(contours) - dropout)
+
     for cnt in contours:
         x, y, w, h = cv2.boundingRect(cnt)
         if h < THIN_THRESHOLD or w < THIN_THRESHOLD:
             continue
-        h_list.append([x, y, w, h])
+
+        if round(w/avgw) >= 2:
+            h_list.append([x, y+1, round(avgw), h])
+            h_list.append([x+w-round(avgw), y, round(avgw), h])
+        if round(w/avgw) == 1:
+            h_list.append([x, y, w, h])
 
     h_list = sorted(h_list, key=lambda coord: (coord[1], coord[0]))[1:]
 
@@ -56,7 +71,7 @@ def characters_segmentation(output_file, img, h_list, valleys):
     # Define cut-out lines
     cut = np.zeros(len(valleys)-1)
     for i in range(len(valleys)-1):
-        cut[i] = int(0.25*valleys[i] + 0.75*valleys[i+1])
+        cut[i] = int(0.3*valleys[i] + 0.7*valleys[i+1])
 
     # Find bottom right corners' y coordinates
     corners = [row[1] + row[3] for row in h_list]
@@ -89,9 +104,8 @@ def order(img, roi, line_idx, output_file):
         makeDir(line_path)
         characters = os.path.join(line_path, "character_" + str(i))
         save_image(cnt, characters)
-        cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255), 5)
-    final = os.path.join(output_file, "final")
-    save_image(img, final)
+        cv2.rectangle(img, (x, y), (x + w, y + h), (200, 0, 0), 2)
+    cv2.imwrite(output_file + '/final.png', img)
 
 
 def segment(segment_output_file, image) -> list:
@@ -100,5 +114,4 @@ def segment(segment_output_file, image) -> list:
     # Find cut-out lines
     valleys = detectValleys(image, 1, 60)
     roi = characters_segmentation(segment_output_file, image, h_list, valleys)
-
     return roi
