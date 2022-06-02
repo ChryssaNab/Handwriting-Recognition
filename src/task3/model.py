@@ -149,13 +149,14 @@ def build_lstm_model(n_classes: int, width: int = 800) -> tf.keras.Model:
     flat = tf.keras.layers.Reshape((logit_length, 512), name="Collapse")(conv)
     lstm = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(512, return_sequences=True, dropout=0.0),
                                          name="BiDir_LSTM_1")(flat)
-    lstm = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(512, return_sequences=True), name="BiDir_LSTM_2")(lstm)
+    lstm = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(512, return_sequences=True, dropout=0.0),
+                                         name="BiDir_LSTM_2")(lstm)
     lstm = tf.keras.layers.Dense(n_classes + 2, activation=None, name="Output_Dense")(lstm)
 
     # output
     softmax = tf.keras.layers.Softmax(axis=-1, name="Output_Softmax")(lstm)
     output = CTCLossLayer(name="CTC_Loss")((input_label, softmax))
-    output = CTCDecodingLayer(name="CTC_Decoding", greedy=True)(output)
+    output = CTCDecodingLayer(name="CTC_Decoding", greedy=False, beam_width=100, top_paths=1)(output)
 
     # build model
     model = tf.keras.models.Model(inputs=[input_img, input_label], outputs=output, name="LSTM_model")
