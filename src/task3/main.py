@@ -13,41 +13,30 @@ if GPU_OFF:
 ########################################################################################################################
 
 import tensorflow as tf
-
 from pathlib import Path
 from jiwer import wer, cer
 
 from settings import get_lstm_settings, save_settings, load_settings
-from data import load_data_dict, load_dataset, split_data_dict, train_test_split, filter_labels, to_dict, from_dict
-from data import tokens_from_text, get_full_token_set
-from preprocessing import invert_color, distortion_free_resize, scale_img
-from preprocessing import LabelEncoder, LabelPadding
+from data import load_data_dict, load_dataset, split_data_dict, train_test_split, filter_labels
+from data import tokens_from_text, to_dict
+from preprocessing import LabelEncoder, LabelPadding, preprocess_train_data
 from model import build_lstm_model, remove_ctc_loss_layer
 from metrics import ErrorRateCallback
 from utils import get_parser, make_dirs, track_time
 
+# Debugging
+DEBUG = False
+
 # Set path to the IAM folder
-local_path_to_iam = "C:\\Users\\Luca\\Desktop\\HWR"
-#local_path_to_iam = "C:\\Users\\muell\\Desktop\\HWR\\Task 3\\Data"
+LOCAL_PATH_TO_IAM = "C:\\Users\\Luca\\Desktop\\HWR"
+#LOCAL_PATH_TO_IAM = "C:\\Users\\muell\\Desktop\\HWR\\Task 3\\Data"
 
 
-@track_time
-def main():
-    global local_path_to_iam
-
-    # cmd args
-    parser = get_parser()
-    args = parser.parse_args()
-
-    # TODO: make separate train / test loop
-    mode = args.mode
-    debug = args.debug
-
-    if args.path is not None:
-        local_path_to_iam = args.path
+def train_model():
+    global DEBUG, LOCAL_PATH_TO_IAM
 
     # IAM data
-    data_dir = Path(local_path_to_iam)
+    data_dir = Path(LOCAL_PATH_TO_IAM)
     if data_dir.name != "IAM-data":
         data_dir = data_dir / "IAM-data"
     if not data_dir.exists():
@@ -60,7 +49,7 @@ def main():
     paths = make_dirs(root_dir)
 
     # Load & save settings
-    s = get_lstm_settings(debug=bool(debug))
+    s = get_lstm_settings(debug=bool(DEBUG))
     save_settings(s, paths.settings)
 
     # Model settings
@@ -78,7 +67,7 @@ def main():
 
     # Load data
     data_dict = load_data_dict(data_dir)
-    dataset = load_dataset(data_dict, img_dir)
+    dataset = load_dataset(data_dict, img_dir, return_filenames=True)
 
     # Get tokens
     full_text = "".join(data_dict.values())
@@ -90,18 +79,11 @@ def main():
     label_encoder = LabelEncoder(tokens)
     label_padding = LabelPadding(pad_value=pad_value, max_len=max_label_len)
 
-    # Pre-process images
-    dataset = dataset.map(lambda x, y: (invert_color(x), y))
-    dataset = dataset.map(lambda x, y: (distortion_free_resize(x, img_size=(image_width, image_height),
-                                                               pad_value=0), y))
-    dataset = dataset.map(lambda x, y: (scale_img(x), y))
-
-    # Pre-process labels
-    dataset = dataset.map(lambda x, y: (x, label_encoder.encode(y)))
-    dataset = dataset.map(lambda x, y: (x, label_padding.add(y)))
+    # preprocess data
+    dataset = preprocess_train_data(dataset, label_encoder, label_padding, image_width, image_height)
 
     # Change to dict format, prepare for input
-    dataset = dataset.map(to_dict)
+    dataset = dataset.map(lambda x, y, f: to_dict(x, y, f, f_key="Filename"))
     dataset = dataset.batch(batch_size, drop_remainder=True)
 
     # Split data: Train = 0.765, Valid = 0.085, Test = 0.15
@@ -137,13 +119,15 @@ def main():
     final_model = remove_ctc_loss_layer(train_model, model_name)
 
     # Test
-    batch = val_ds.take(1)
+    batch = test_ds.take(1)
     y_pred = final_model.predict(val_ds.map(filter_labels))
     y_pred = tf.convert_to_tensor(y_pred, dtype="int32")
     for i, sample in iter(batch.unbatch().enumerate()):
-        img, y_true = sample["Image"], sample["Label"]
+        img, y_true, filename = sample["Image"], sample["Label"], sample["Filename"]
+        filename = bytes(filename.numpy()).decode()
         y_true = label_padding.remove(y_true)
         y_true = label_encoder.decode(y_true)
+        print(f"File: {filename}")
         print(f"y_true: {y_true}")
         output = y_pred[i]
         output = label_padding.remove(output, pad_value=ctc_blank)
@@ -156,6 +140,35 @@ def main():
 
     # Save model
     final_model.save(paths.model / f"{model_name}.h5")
+
+# TODO
+def test_model():
+    # Load data & model
+
+    # Preprocess data
+
+    # Run model & save output
+    pass
+
+
+@track_time
+def main():
+    global DEBUG, LOCAL_PATH_TO_IAM
+
+    # cmd args
+    parser = get_parser()
+    args = parser.parse_args()
+
+    mode = args.mode
+    DEBUG = args.debug
+
+    if args.path is not None:
+        LOCAL_PATH_TO_IAM = args.path
+
+    if mode == "train":
+        train_model()
+    elif mode == "test":
+        test_model()
 
 
 if __name__ == "__main__":
