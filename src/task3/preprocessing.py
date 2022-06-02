@@ -23,7 +23,7 @@ def invert_color(image: tf.Tensor) -> tf.Tensor:
 @tf.function
 def distortion_free_resize(image: tf.Tensor,
                            img_size: Tuple[int, int] = None,
-                           pad_value: int = 255
+                           pad_value: int = 255,
                            ) -> tf.Tensor:
     """
     Pad and resize image to new size while conserving aspect ratio.
@@ -173,3 +173,56 @@ class LabelPadding:
         label = tf.cond(tf.rank(label) > tf.constant(1), lambda: tf.squeeze(label), lambda: label)
         label = tf.gather(label, tf.where(tf.math.not_equal(label, pad_value)))
         return label
+
+
+def preprocess_train_data(dataset: tf.data.Dataset,
+                    label_encoder: LabelEncoder,
+                    label_padding: LabelPadding,
+                    image_width: int = 800,
+                    image_height: int = 64,
+                    ) -> tf.data.Dataset:
+    """
+    Image & label preprocessing for IAM training data.
+    Dataset may include filenames.
+
+    :param dataset: IAM dataset with (images, labels[, filenames])
+    :param label_encoder: encode strings to int
+    :param label_padding: pad labels to same length
+    :param image_width: model input width
+    :param image_height: model input height
+    :return: preprocessed dataset
+    """
+
+    # Pre-process images
+    dataset = dataset.map(lambda x, y, *f: (invert_color(x), y, *f))
+    dataset = dataset.map(lambda x, y, *f: (distortion_free_resize(x, img_size=(image_width, image_height),
+                                                                   pad_value=0), y, *f))
+    dataset = dataset.map(lambda x, y, *f: (scale_img(x), y, *f))
+
+    # Pre-process labels
+    dataset = dataset.map(lambda x, y, *f: (x, label_encoder.encode(y), *f))
+    dataset = dataset.map(lambda x, y, *f: (x, label_padding.add(y), *f))
+
+    return dataset
+
+
+def preprocess_test_data(dataset: tf.data.Dataset,
+                         image_width: int = 800,
+                         image_height: int = 64,
+                         ) -> tf.data.Dataset:
+    """
+    Image & label preprocessing for IAM test data.
+
+    :param dataset: IAM dataset with (images, filenames)
+    :param image_width: model input width
+    :param image_height: model input height
+    :return: preprocessed dataset
+    """
+
+    # Pre-process images
+    dataset = dataset.map(lambda x, f: (invert_color(x), f))
+    dataset = dataset.map(lambda x, f: (distortion_free_resize(x, img_size=(image_width, image_height),
+                                                               pad_value=0), f))
+    dataset = dataset.map(lambda x, f: (scale_img(x), f))
+
+    return dataset
