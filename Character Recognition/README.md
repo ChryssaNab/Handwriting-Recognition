@@ -22,11 +22,9 @@ $ cd Handwriting_Recognition-RUG/Character\ Recognition/
 $ pip install -r requirements.txt
 ```
 
-**4.** Change the absolute paths of DDS input data and results using the **/src/opts.py**.
-
-**5.** Run **main.py** to segment DDS test images into lines and words.
+**4.** Run **main.py** to execute the end-to-end pipeline.
 
 ``` shell
- $ python3 src/main.py
+ $ python3 src/main.py --data_path 'DATA_PATH'
  ```
 
