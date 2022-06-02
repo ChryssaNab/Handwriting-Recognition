@@ -15,10 +15,10 @@ from preprocessing import preprocessing
 
 def main():
     opt = parse_opts()
-
+    
     opt.segmentation_path = os.path.join(opt.result_path, opt.segmentation_path)
     opt.transcript_path = os.path.join(opt.result_path, opt.transcript_path)
-
+    
     # Remove old instance of results if exist
     removeDir(opt.result_path)
 

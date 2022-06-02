@@ -11,8 +11,6 @@ def parse_opts():
     
     parser.add_argument(
         '--data_path',
-        default="/home/chryssa/Desktop/Groningen/RUG/Semester 2b/Handwriting "
-                "Recognition/Assignment/Datasets/DSS/image-data/image-data",
         type=str,
         help='RGB DSS dataset')
 
