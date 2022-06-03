@@ -189,6 +189,20 @@ def tokens_from_text(text: str) -> List[str]:
     return sorted(list(set(text)))
 
 
+def get_iam_token_set() -> List[str]:
+    """
+    Get a token set with all characters in the provided IAM data set.
+
+    :return: list of tokens
+    """
+    tokens = [' ', '!', '"', '#', '&', "'", '(', ')', '*', '+', ',', '-', '.', '/', '0', '1', '2', '3', '4', '5',
+              '6', '7', '8', '9', ':', ';', '?', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+              'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g',
+              'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+
+    return tokens
+
+
 def get_full_token_set() -> List[str]:
     """
     Get a token set with all common characters.
