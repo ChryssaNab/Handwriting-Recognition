@@ -22,7 +22,10 @@ LOCAL_PATH_TO_IAM = "C:\\Users\\Luca\\Desktop\\HWR"
 #LOCAL_PATH_TO_IAM = "C:\\Users\\muell\\Desktop\\HWR\\Task 3\\Data"
 
 
-def train_model():
+def train_model() -> None:
+    """
+    Train the model with the settings provided in 'settings.py'.
+    """
     global DEBUG, LOCAL_PATH_TO_IAM
 
     # IAM data
@@ -132,8 +135,16 @@ def train_model():
     # Save model
     final_model.save(paths.model / f"{model_name}.h5")
 
-# TODO
-def test_model(model_path, img_path):
+
+def test_model(model_path, img_path) -> None:
+    """
+    Test a trained model on new data and save results.
+    Each image generates one txt file.
+
+    :param model_path: path to trained model
+    :param img_path: path to IAM img folder
+    """
+
     # Load model
     model = tf.keras.models.load_model(model_path, custom_objects={"CTCDecodingLayer": CTCDecodingLayer})
     print(model.summary())
@@ -177,18 +188,22 @@ def test_model(model_path, img_path):
 
 @track_time
 def main():
+    """
+    Train or test model in standard or debug mode.
+    """
     global DEBUG
 
-    # cmd args
+    # CMD args
     parser = get_parser()
     args = parser.parse_args()
-
     mode = args.mode
     DEBUG = args.debug
 
+    # Data & model path
     img_path = args.path
     model_path = Path("../iam_results/run_2022_06_03-15_02_39/model/LSTM_model_debug.h5")
 
+    # Run train or test
     if mode == "train":
         train_model()
     elif mode == "test":
