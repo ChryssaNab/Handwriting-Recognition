@@ -2,27 +2,17 @@
 Train and test a model on the IAM dataset.
 """
 
-################################################## DEBUGGING ###########################################################
-
-GPU_OFF = 0
-
-if GPU_OFF:
-    import os
-    os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
-
-########################################################################################################################
-
 import tensorflow as tf
 from pathlib import Path
 from jiwer import wer, cer
 
 from settings import get_lstm_settings, save_settings, load_settings
 from data import load_data_dict, load_dataset, split_data_dict, train_test_split, filter_labels
-from data import tokens_from_text, to_dict
-from preprocessing import LabelEncoder, LabelPadding, preprocess_train_data
-from model import build_lstm_model, remove_ctc_loss_layer
+from data import tokens_from_text, to_dict, get_iam_token_set
+from preprocessing import LabelEncoder, LabelPadding, preprocess_train_data, preprocess_test_data
+from model import build_lstm_model, remove_ctc_loss_layer, CTCDecodingLayer
 from metrics import ErrorRateCallback
-from utils import get_parser, make_dirs, track_time
+from utils import get_parser, make_dirs, track_time, show_sample
 
 # Debugging
 DEBUG = False
@@ -98,7 +88,8 @@ def train_model():
     # Callbacks
     error_cb = ErrorRateCallback(val_ds, label_encoder, label_padding, log_dir=paths.logs / "validation")
     tensorboard_cb = tf.keras.callbacks.TensorBoard(log_dir=paths.logs)
-    checkpoint_cb = tf.keras.callbacks.ModelCheckpoint(paths.checkpoint / f"{model_name}_checkpoint.h5")
+    checkpoint_cb = tf.keras.callbacks.ModelCheckpoint(filepath=paths.checkpoint / f"{model_name}_checkpoint.h5",
+                                                       save_weights_only=True)
     early_stopping_cb = tf.keras.callbacks.EarlyStopping(patience=10, restore_best_weights=True)
     callbacks = [error_cb, tensorboard_cb, checkpoint_cb, early_stopping_cb]
 
@@ -142,18 +133,51 @@ def train_model():
     final_model.save(paths.model / f"{model_name}.h5")
 
 # TODO
-def test_model():
-    # Load data & model
+def test_model(model_path, img_path):
+    # Load model
+    model = tf.keras.models.load_model(model_path, custom_objects={"CTCDecodingLayer": CTCDecodingLayer})
+    print(model.summary())
+
+    # Load & preprocess images
+    filenames = list(img_path.glob("*.png"))
+    filenames = [str(f.name) for f in filenames]
+    data_dict = dict.fromkeys(filenames, "N/A")
+    dataset = load_dataset(data_dict, img_dir=img_path, return_filenames=True)
+    dataset = dataset.map(lambda x, y, f: (x, f))
 
     # Preprocess data
+    dataset = dataset.apply(preprocess_test_data).batch(1)
+
+    # Get tokens
+    tokens = get_iam_token_set()
+    pad_value = len(tokens) + 3
+    ctc_blank = -1
+
+    # Prepare label encoding & padding
+    label_encoder = LabelEncoder(tokens)
+    label_padding = LabelPadding(pad_value=pad_value, max_len=99)
+
+    # Create results folder
+    results_path = Path("../results")
+    results_path.mkdir(exist_ok=True)
 
     # Run model & save output
-    pass
+    for img, filename in iter(dataset):
+        y_pred = model.predict({"Image": img})
+        y_pred = y_pred[0]
+        f_name = bytes(filename.numpy()[0]).decode()
+        output = y_pred
+        output = label_padding.remove(output, pad_value=ctc_blank)
+        output = label_encoder.decode(output)
+        #print(f"filename: {f_name}")
+        #print(f"y_pred: {output}")
+        with open(results_path / f_name.replace(".png", ".txt"), "w") as f:
+            f.write(output)
 
 
 @track_time
 def main():
-    global DEBUG, LOCAL_PATH_TO_IAM
+    global DEBUG
 
     # cmd args
     parser = get_parser()
@@ -162,13 +186,15 @@ def main():
     mode = args.mode
     DEBUG = args.debug
 
-    if args.path is not None:
-        LOCAL_PATH_TO_IAM = args.path
+    img_path = args.path
+    model_path = Path("../iam_results/run_2022_06_03-15_02_39/model/LSTM_model_debug.h5")
 
     if mode == "train":
         train_model()
     elif mode == "test":
-        test_model()
+        if img_path is None:
+            raise IOError("Path to IAM images is missing.")
+        test_model(model_path=model_path, img_path=Path(img_path))
 
 
 if __name__ == "__main__":
