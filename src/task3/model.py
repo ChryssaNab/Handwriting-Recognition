@@ -20,7 +20,7 @@ class CTCLossLayer(tf.keras.layers.Layer):
         :param name: name of layer
         :param kwargs: kwargs for base class
         """
-        super().__init__(name=name, trainable=False, **kwargs)
+        super().__init__(name=name, **kwargs)
         self.loss_fn = tf.keras.backend.ctc_batch_cost
 
     def call(self, X: Tuple[tf.Tensor, tf.Tensor]) -> tf.Tensor:
@@ -66,7 +66,7 @@ class CTCDecodingLayer(tf.keras.layers.Layer):
         :param name: name of layer
         :param kwargs: kwargs for base class
         """
-        super().__init__(name=name, trainable=False, **kwargs)
+        super().__init__(name=name, **kwargs)
         self.decode_fn = tf.keras.backend.ctc_decode
         self.greedy = greedy
         self.beam_width = beam_width
@@ -96,7 +96,7 @@ class CTCDecodingLayer(tf.keras.layers.Layer):
         config = super().get_config().copy()
         config.update({
             'greedy': self.greedy,
-            'bean_width': self.beam_width,
+            'beam_width': self.beam_width,
             'top_paths': self.top_paths,
         })
         return config
