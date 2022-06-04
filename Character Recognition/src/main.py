@@ -50,7 +50,7 @@ def main():
 
         # Recognize segmented characters
         makeDir(opt.transcript_path)
-        predict.predict(segment_output_file, opt.transcript_path, model, n_grams)
+        predict.predict(segment_output_file, opt.transcript_path, model, bigram_model)
 
     end_time = time.time()
     elapsed_time = end_time - start_time
