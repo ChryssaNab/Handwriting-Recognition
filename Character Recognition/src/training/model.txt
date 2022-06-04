@@ -17,16 +17,16 @@ _________________________________________________________________
  average_pooling2d_2 (Averag  (None, 4, 3, 128)        0         
  ePooling2D)                                                     
                                                                  
- dense (Dense)               (None, 4, 3, 128)         16512     
+ flatten (Flatten)           (None, 1536)              0         
                                                                  
- dense_1 (Dense)             (None, 4, 3, 64)          8256      
+ dense (Dense)               (None, 120)               184440    
                                                                  
- flatten (Flatten)           (None, 768)               0         
+ dense_1 (Dense)             (None, 84)                10164     
                                                                  
- dense_2 (Dense)             (None, 27)                20763     
+ dense_2 (Dense)             (None, 27)                2295      
                                                                  
 =================================================================
-Total params: 138,203
-Trainable params: 138,203
+Total params: 289,571
+Trainable params: 289,571
 Non-trainable params: 0
 _________________________________________________________________

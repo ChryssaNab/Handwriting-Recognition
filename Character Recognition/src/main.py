@@ -15,7 +15,8 @@ from preprocessing import preprocessing
 
 def main():
     opt = parse_opts()
-    
+
+    # Define paths for output files
     opt.segmentation_path = os.path.join(opt.result_path, opt.segmentation_path)
     opt.transcript_path = os.path.join(opt.result_path, opt.transcript_path)
     
@@ -37,6 +38,7 @@ def main():
 
     for file in binary_images:
 
+        # Load a single image
         img = image.imread(file)
         # Preprocess img according to intensity values
         img = preprocessing(img)

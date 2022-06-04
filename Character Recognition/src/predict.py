@@ -2,8 +2,8 @@
 
 import os
 import cv2
-import pickle
 import numpy as np
+import pickle5 as pickle
 from natsort import natsorted
 from transcript import script
 

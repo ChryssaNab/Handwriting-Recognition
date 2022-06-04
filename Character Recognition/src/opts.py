@@ -44,7 +44,6 @@ def parse_opts():
         type=str,
         help='Save images (.jpg) of pre-processing step')
 
-
     args = parser.parse_args()
 
     return args

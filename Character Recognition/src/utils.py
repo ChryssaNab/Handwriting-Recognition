@@ -1,4 +1,5 @@
 """ This module implements functions used in multiple scripts. """
+
 import os
 import shutil
 from PIL import Image
