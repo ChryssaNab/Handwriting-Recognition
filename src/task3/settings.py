@@ -24,7 +24,7 @@ def get_lstm_settings(debug: bool = False) -> Dict[str, Any]:
                              'class_name':  'RMSprop',
                              'config':      {
                                              'name':            'RMSprop',
-                                             'learning_rate':   0.0005,
+                                             'learning_rate':   0.00025,
                                              'decay':           0.0,
                                              'rho':             0.9,
                                              'momentum':        0.0,
