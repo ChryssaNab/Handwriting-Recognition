@@ -41,23 +41,23 @@
 
 **Commands** 
 
-# Step 1: We assume that Python3 is already installed on the device and the Dead Sea Scrolls (DSS) dataset is downloaded.
+### Step 1: We assume that Python3 is already installed on the device and the Dead Sea Scrolls (DSS) dataset is downloaded.
 
 |-------------------------------------------------------------------------------------------------------------------------------------|
 
-# Step 2: Navigate to the project's directory.
+### Step 2: Navigate to the project's directory.
 
 	$ cd Handwriting_Recognition-RUG/Character\ Recognition/DSS/
 	
 |-------------------------------------------------------------------------------------------------------------------------------------|
 
-# Step 3: Install all necessary packages using the requirements.txt file.
+### Step 3: Install all necessary packages using the requirements.txt file.
 
 	$ pip install -r requirements.txt
 	
 |-------------------------------------------------------------------------------------------------------------------------------------|
 	
-# Step 4: Run main.py to execute the end-to-end pipeline.
+### Step 4: Run main.py to execute the end-to-end pipeline.
 
 	$ python3 src/main.py --data_path 'DATA_PATH'
 	
