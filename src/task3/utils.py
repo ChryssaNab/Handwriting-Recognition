@@ -23,6 +23,8 @@ def get_parser() -> argparse.ArgumentParser:
     parser.add_argument('--mode', type=str, choices=['train', 'test'], default='test',
                         help="train or test model (default test)")
     parser.add_argument('--debug', action='store_true', default=False, help="use debug mode (default False)")
+    parser.add_argument('--final', action='store_true', default=False, help="train model on the whole data set "
+                                                                            "(default False)")
     return parser
 
 
