@@ -148,6 +148,8 @@ def test_model(model_path, img_path) -> None:
     :param img_path: path to IAM img folder
     """
 
+    global DEBUG
+
     # Load model
     model = tf.keras.models.load_model(model_path, custom_objects={"CTCDecodingLayer": CTCDecodingLayer})
     print(model.summary())
@@ -178,10 +180,11 @@ def test_model(model_path, img_path) -> None:
     label_padding = LabelPadding(pad_value=pad_value, max_len=max_label_len)
 
     # Create results folder
-    results_path = Path("/results")
-    print(results_path.absolute())
-    exit()
+    results_path = Path("./results")
     results_path.mkdir(exist_ok=True)
+
+    if DEBUG:
+        dataset = dataset.take(20)
 
     # Run model & save output
     for img, filename in tqdm(iter(dataset)):
