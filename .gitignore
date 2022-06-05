@@ -1,6 +1,5 @@
 # model data
-iam_results
-results
+**/*results*
 
 # Byte-compiled / optimized / DLL files
 **/__pycache__/
