@@ -114,7 +114,8 @@ def train_model() -> None:
     final_model = remove_ctc_loss_layer(train_model, model_name)
 
     # Test
-    batch = test_ds.take(1)
+    batch = test_ds
+    wer_hist, cer_hist = [], []
     y_pred = final_model.predict(test_ds.map(filter_labels))
     y_pred = tf.convert_to_tensor(y_pred, dtype="int32")
     for i, sample in iter(batch.unbatch().enumerate()):
@@ -132,8 +133,25 @@ def train_model() -> None:
 
         wer_score = wer(y_true, output)
         cer_score = cer(y_true, output)
-        print(f"wer: {wer_score:.4f}")
-        print(f"cer: {cer_score:.4f}\n")
+        wer_hist.append(wer_score)
+        cer_hist.append(cer_score)
+
+        with open(paths.logs / "output.txt", "a") as f:
+            f.write(f"File: {filename}\n")
+            f.write(f"y_true: {y_true}\n")
+            f.write(f"y_pred: {output}\n")
+            f.write(f"WER: {wer_score:.4f}\n")
+            f.write(f"CER: {cer_score:.4f}\n\n")
+
+        print(f"WER: {wer_score:.4f}")
+        print(f"CER: {cer_score:.4f}\n")
+
+    with open(paths.logs / "output.txt", "a") as f:
+        f.write(f"Mean WER: {tf.reduce_mean(wer_hist)}")
+        f.write(f"Mean CER: {tf.reduce_mean(cer_hist)}")
+
+    print(f"Mean WER: {tf.reduce_mean(wer_hist)}")
+    print(f"Mean CER: {tf.reduce_mean(cer_hist)}")
 
     # Save model
     final_model.save(paths.model / f"{model_name}.h5")
