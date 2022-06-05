@@ -18,13 +18,13 @@ def get_lstm_settings(debug: bool = False) -> Dict[str, Any]:
     settings = {
 
         # Training
-        "epochs":           100,
+        "epochs":           50,
         "batch_size":       24,
         "optimizer":        {
                              'class_name':  'RMSprop',
                              'config':      {
                                              'name':            'RMSprop',
-                                             'learning_rate':   0.001,
+                                             'learning_rate':   0.0005,
                                              'decay':           0.0,
                                              'rho':             0.9,
                                              'momentum':        0.0,
@@ -34,7 +34,7 @@ def get_lstm_settings(debug: bool = False) -> Dict[str, Any]:
                             },
 
         # Image size
-        "image_width":      800,
+        "image_width":      1000,
         "image_height":     64,
 
         # Label length

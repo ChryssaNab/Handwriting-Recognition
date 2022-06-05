@@ -13,8 +13,8 @@ def data_augment():
     """
     data_augmentation = Sequential([
         layers.RandomRotation(0.02),
-        layers.RandomTranslation(0.05, 0.1, fill_mode="constant", fill_value=0.0),
-        layers.RandomContrast(0.9),
-        layers.GaussianNoise(0.05),
+        layers.RandomTranslation(0.02, 0.05, fill_mode="constant", fill_value=0.0),
+        layers.RandomContrast(0.8),
+        layers.GaussianNoise(0.02),
     ], name="Data_Augmentation")
     return data_augmentation
