@@ -5,6 +5,7 @@ Train and test a model on the IAM dataset.
 import tensorflow as tf
 from pathlib import Path
 from jiwer import wer, cer
+from tqdm import tqdm
 
 from settings import get_lstm_settings, save_settings, load_settings
 from data import load_data_dict, load_dataset, split_data_dict, train_test_split, filter_labels
@@ -114,19 +115,21 @@ def train_model() -> None:
 
     # Test
     batch = test_ds.take(1)
-    y_pred = final_model.predict(val_ds.map(filter_labels))
+    y_pred = final_model.predict(test_ds.map(filter_labels))
     y_pred = tf.convert_to_tensor(y_pred, dtype="int32")
     for i, sample in iter(batch.unbatch().enumerate()):
-        img, y_true, filename = sample["Image"], sample["Label"], sample["Filename"]
+        y_true, filename = sample["Label"], sample["Filename"]
         filename = bytes(filename.numpy()).decode()
         y_true = label_padding.remove(y_true)
         y_true = label_encoder.decode(y_true)
         print(f"File: {filename}")
         print(f"y_true: {y_true}")
+
         output = y_pred[i]
         output = label_padding.remove(output, pad_value=ctc_blank)
         output = label_encoder.decode(output)
         print(f"y_pred: {output}")
+
         wer_score = wer(y_true, output)
         cer_score = cer(y_true, output)
         print(f"wer: {wer_score:.4f}")
@@ -149,6 +152,10 @@ def test_model(model_path, img_path) -> None:
     model = tf.keras.models.load_model(model_path, custom_objects={"CTCDecodingLayer": CTCDecodingLayer})
     print(model.summary())
 
+    # Load model settings
+    model_settings = load_settings(Path("../iam_results/run_2022_06_04-best/settings/LSTM_model_settings.json"))
+    image_width = model_settings["image_width"]
+
     # Load & preprocess images
     filenames = list(img_path.glob("*.png"))
     filenames = [str(f.name) for f in filenames]
@@ -157,31 +164,33 @@ def test_model(model_path, img_path) -> None:
     dataset = dataset.map(lambda x, y, f: (x, f))
 
     # Preprocess data
-    dataset = dataset.apply(preprocess_test_data).batch(1)
+    preprocess = lambda d: preprocess_test_data(d, image_width=image_width)
+    dataset = dataset.apply(preprocess).batch(1)
 
     # Get tokens
     tokens = get_iam_token_set()
     pad_value = len(tokens) + 3
-    ctc_blank = -1
+    ctc_blank = model_settings["ctc_blank"]
 
     # Prepare label encoding & padding
+    max_label_len = 99
     label_encoder = LabelEncoder(tokens)
-    label_padding = LabelPadding(pad_value=pad_value, max_len=99)
+    label_padding = LabelPadding(pad_value=pad_value, max_len=max_label_len)
 
     # Create results folder
-    results_path = Path("../results")
+    results_path = Path("/results")
+    print(results_path.absolute())
+    exit()
     results_path.mkdir(exist_ok=True)
 
     # Run model & save output
-    for img, filename in iter(dataset):
+    for img, filename in tqdm(iter(dataset)):
         y_pred = model.predict({"Image": img})
-        y_pred = y_pred[0]
+        output = y_pred[0]
         f_name = bytes(filename.numpy()[0]).decode()
-        output = y_pred
         output = label_padding.remove(output, pad_value=ctc_blank)
         output = label_encoder.decode(output)
-        #print(f"filename: {f_name}")
-        #print(f"y_pred: {output}")
+
         with open(results_path / f_name.replace(".png", ".txt"), "w") as f:
             f.write(output)
 
@@ -201,7 +210,7 @@ def main():
 
     # Data & model path
     img_path = args.path
-    model_path = Path("../iam_results/run_2022_06_03-15_02_39/model/LSTM_model_debug.h5")
+    model_path = Path("../iam_results/run_2022_06_04-best/model/LSTM_model.h5")
 
     # Run train or test
     if mode == "train":

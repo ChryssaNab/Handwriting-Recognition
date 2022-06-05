@@ -19,7 +19,7 @@ def get_parser() -> argparse.ArgumentParser:
     :return: parser with args
     """
     parser = argparse.ArgumentParser(description="args for IAM main")
-    parser.add_argument('path', type=str, nargs='?', default=None, help="path to 'IAM-data'")
+    parser.add_argument('path', type=str, nargs='?', default=None, help="path to 'img' (test) or 'IAM-data' (train)")
     parser.add_argument('--mode', type=str, choices=['train', 'test'], default='test',
                         help="train or test model (default test)")
     parser.add_argument('--debug', action='store_true', default=False, help="use debug mode (default False)")
