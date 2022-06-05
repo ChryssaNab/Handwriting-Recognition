@@ -18,14 +18,15 @@ from utils import get_parser, make_dirs, track_time, show_sample
 # Debugging
 DEBUG = False
 
-# Set path to the IAM folder
-LOCAL_PATH_TO_IAM = "C:\\Users\\Luca\\Desktop\\HWR"
-#LOCAL_PATH_TO_IAM = "C:\\Users\\muell\\Desktop\\HWR\\Task 3\\Data"
+# Set path to the IAM folder for training (or pass as arg)
+LOCAL_PATH_TO_IAM = None
 
 
-def train_model() -> None:
+def train_model(final: bool = False) -> None:
     """
     Train the model with the settings provided in 'settings.py'.
+
+    :param final: if set to 'True', train on the whole dataset
     """
     global DEBUG, LOCAL_PATH_TO_IAM
 
@@ -102,6 +103,15 @@ def train_model() -> None:
         train_ds = train_ds.take(1)
         val_ds = val_ds.take(1)
         test_ds = test_ds.take(1)
+        dataset = dataset.take(1)
+
+    # Use whole dataset for training final model, no validation data & no early stopping
+    if final:
+        train_ds = dataset
+        val_ds = None
+        epochs = 25
+        callbacks.remove(early_stopping_cb)
+        callbacks.remove(error_cb)
 
     # Train
     history = train_model.fit(train_ds,
@@ -113,23 +123,27 @@ def train_model() -> None:
     # Remove loss layer after training
     final_model = remove_ctc_loss_layer(train_model, model_name)
 
+    # Save model
+    final_model.save(paths.model / f"{model_name}.h5")
+
+    # Skip test when finalizing model
+    if final:
+        return
+
     # Test
     batch = test_ds
     wer_hist, cer_hist = [], []
     y_pred = final_model.predict(test_ds.map(filter_labels))
     y_pred = tf.convert_to_tensor(y_pred, dtype="int32")
-    for i, sample in iter(batch.unbatch().enumerate()):
+    for i, sample in tqdm(iter(batch.unbatch().enumerate())):
         y_true, filename = sample["Label"], sample["Filename"]
         filename = bytes(filename.numpy()).decode()
         y_true = label_padding.remove(y_true)
         y_true = label_encoder.decode(y_true)
-        print(f"File: {filename}")
-        print(f"y_true: {y_true}")
 
         output = y_pred[i]
         output = label_padding.remove(output, pad_value=ctc_blank)
         output = label_encoder.decode(output)
-        print(f"y_pred: {output}")
 
         wer_score = wer(y_true, output)
         cer_score = cer(y_true, output)
@@ -143,18 +157,12 @@ def train_model() -> None:
             f.write(f"WER: {wer_score:.4f}\n")
             f.write(f"CER: {cer_score:.4f}\n\n")
 
-        print(f"WER: {wer_score:.4f}")
-        print(f"CER: {cer_score:.4f}\n")
-
     with open(paths.logs / "output.txt", "a") as f:
-        f.write(f"Mean WER: {tf.reduce_mean(wer_hist)}")
-        f.write(f"Mean CER: {tf.reduce_mean(cer_hist)}")
+        f.write(f"Mean WER: {tf.reduce_mean(wer_hist):.4f}")
+        f.write(f"Mean CER: {tf.reduce_mean(cer_hist):.4f}")
 
-    print(f"Mean WER: {tf.reduce_mean(wer_hist)}")
-    print(f"Mean CER: {tf.reduce_mean(cer_hist)}")
-
-    # Save model
-    final_model.save(paths.model / f"{model_name}.h5")
+    print(f"Mean WER: {tf.reduce_mean(wer_hist):.4f}")
+    print(f"Mean CER: {tf.reduce_mean(cer_hist):.4f}")
 
 
 def test_model(model_path, img_path) -> None:
@@ -173,7 +181,7 @@ def test_model(model_path, img_path) -> None:
     print(model.summary())
 
     # Load model settings
-    model_settings = load_settings(Path("../iam_results/run_2022_06_04-best/settings/LSTM_model_settings.json"))
+    model_settings = load_settings(Path("../iam_results/run_final_model/settings/LSTM_model_settings.json"))
     image_width = model_settings["image_width"]
 
     # Load & preprocess images
@@ -221,7 +229,7 @@ def main():
     """
     Train or test model in standard or debug mode.
     """
-    global DEBUG
+    global DEBUG, LOCAL_PATH_TO_IAM
 
     # CMD args
     parser = get_parser()
@@ -231,11 +239,13 @@ def main():
 
     # Data & model path
     img_path = args.path
-    model_path = Path("../iam_results/run_2022_06_04-best/model/LSTM_model.h5")
+    model_path = Path("../iam_results/run_final_model/model/LSTM_model.h5")
 
     # Run train or test
     if mode == "train":
-        train_model()
+        if img_path is not None:
+            LOCAL_PATH_TO_IAM = img_path
+        train_model(final=args.final)
     elif mode == "test":
         if img_path is None:
             raise IOError("Path to IAM images is missing.")
