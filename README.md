@@ -8,4 +8,4 @@
 ### 2nd Assignment: [Line Recognition]()
 1. [Project Description](https://github.com/ChryssaNab/Handwriting-Recognition/blob/main/HWR_Project_description.pdf) (Task 3)
 2. [Implementation]()
-3. [Report]()
+3. [Report](https://github.com/ChryssaNab/Handwriting-Recognition/blob/main/Character%20Recognition/report/report.pdf)
