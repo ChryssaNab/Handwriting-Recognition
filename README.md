@@ -11,7 +11,7 @@
 
 ---
 
-### [**Team**](#) <a name="team"></a>
+### Team
 
 - [C. M. Nampouri](https://github.com/ChryssaNab)
 - Shray Juneja
