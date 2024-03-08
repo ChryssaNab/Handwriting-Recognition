@@ -13,7 +13,7 @@
 
 ### Team
 
-- [C. M. Nampouri](https://github.com/ChryssaNab)
+- [Chryssa Nampouri](https://github.com/ChryssaNab)
 - Shray Juneja
 - Luca Mueller
 - Wopke de Vries
