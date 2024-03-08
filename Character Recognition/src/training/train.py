@@ -13,7 +13,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from keras import layers, models
 from tensorflow.python.ops.numpy_ops import np_config
-from training import dataAugmentation
+from dataAugmentation import augmentation
 
 np_config.enable_numpy_behavior()
 
@@ -57,7 +57,7 @@ def load(path):
                 image = cv2.imread(file)
                 # Augment the image
                 if _ != 0:
-                    image = dataAugmentation.augmentation(image)
+                    image = augmentation(image)
                 # Preprocess image
                 image = preprocessing(image)
                 data.append(image)
@@ -124,13 +124,13 @@ def plot(train_metric, val_metric, low):
     plt.ylabel(train_metric)
     plt.ylim([low, 1])
     plt.legend(loc="best")
-    plt.savefig(train_metric + ".jpg")
+    plt.savefig("./src/training/" + train_metric + ".jpg")
 
 
 if __name__ == '__main__':
 
     # Set path to the monkbrill data
-    data_path = ""
+    data_path = "./DSS/monkbrill/"
 
     # Load dataset and labels
     dataset, labels = load(data_path)
@@ -155,14 +155,14 @@ if __name__ == '__main__':
     test_loss, test_acc = cnn.evaluate(x_test, y_test, verbose=2)
 
     # Save trained model for later use
-    cnn.save("./training/model.h5", include_optimizer=True)
+    cnn.save("./src/training/model.h5", include_optimizer=True)
 
     # Save learning curves
     plot('accuracy', 'val_accuracy', 0.5)
     plot('loss', 'val_loss', 0)
 
     # Save summary and label encoder transformation
-    with open('./training/model.txt', 'w') as file:
+    with open('./src/training/model.txt', 'w') as file:
         cnn.summary(print_fn=lambda x: file.write(x + '\n'))
-    with open('./training/LabelEncoder.pickle', 'wb') as f:
+    with open('./src/training/LabelEncoder.pickle', 'wb') as f:
         pickle.dump(le, f, pickle.HIGHEST_PROTOCOL)
