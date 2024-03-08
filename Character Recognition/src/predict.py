@@ -7,7 +7,7 @@ import pickle5 as pickle
 from natsort import natsorted
 from transcript import script
 
-with open('./training/LabelEncoder.pickle', 'rb') as f:
+with open('./src/training/LabelEncoder.pickle', 'rb') as f:
     LabelEncoder = pickle.load(f)
 
 

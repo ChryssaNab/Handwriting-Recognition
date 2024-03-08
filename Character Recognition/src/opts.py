@@ -16,7 +16,7 @@ def parse_opts():
 
     parser.add_argument(
         '--ngrams_freq',
-        default="../ngrams_frequencies_withNames.csv",
+        default="./ngrams_frequencies_withNames.csv",
         type=str,
         help='File of n-grams frequencies')
 
