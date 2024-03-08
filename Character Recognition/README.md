@@ -65,11 +65,19 @@ Execute the *main.py* script to initiate the end-to-end pipeline and set the `--
 
 ### [**Training**](#) <a name="training"></a>
 
-If you wish to train the model from scratch, run the following command and set the `--data_path`, to the *monkbrill* training data:
+If you wish to train the model from scratch, run the following command:
 
 ``` shell
- $ python3 src/training/train.py --data_path 'DATA_PATH'
+ $ python3 src/training/train.py
  ```
+
+The data path for running the command mentioned above points to the *monkbrill* training data specified in lines 132-133, as demonstrated below:
+
+```python
+# Set path to the monkbrill data
+data_path = "./DSS/monkbrill/"  
+ ```
+
 ---
 
 ### [**Output**](#) <a name="output"></a>
