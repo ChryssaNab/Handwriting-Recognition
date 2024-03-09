@@ -1,12 +1,12 @@
 import glob
 import time
 import os
-
-from matplotlib import image
-from tensorflow import keras
+import tensorflow as tf
 
 import n_grams
 import predict
+
+from matplotlib import image
 from opts import parse_opts
 from utils import makeDir, removeDir, save_image
 from segmentation import segment
@@ -26,6 +26,7 @@ def main():
     # Load images
     data_dir = os.path.join(opt.data_path, "*" + opt.extension)
     images = glob.glob(data_dir)
+    
     # Keep only binary images
     binary_images = [name for name in images if name.endswith("binarized.jpg")]
 
@@ -34,7 +35,7 @@ def main():
     # Create bigram language model of Hebrew characters'
     bigram_model = n_grams.getProbs(opt.ngrams_freq)
     # Load model
-    model = keras.models.load_model('./training/model.h5')
+    model = tf.keras.models.load_model('./src/training/model.h5')
 
     for file in binary_images:
 
