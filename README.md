@@ -1,6 +1,6 @@
 # Handwriting Recognition
 
-### 1st Assignment: [Character Segmentation and Recognition](https://github.com/ChryssaNab/Handwriting-Recognition/tree/main/Character%20Recognition)
+### 1st Assignment: [Character Segmentation and Recognition](https://github.com/ChryssaNab/Handwriting-Recognition/tree/main/Character_Recognition)
 1. [Project Description](https://github.com/ChryssaNab/Handwriting-Recognition/blob/main/HWR_Project_description.pdf) (Task 1 & 2)
 2. [Implementation](https://github.com/ChryssaNab/Handwriting-Recognition/tree/main/Character_Recognition/src)
 3. [Report](https://github.com/ChryssaNab/Handwriting-Recognition/blob/main/Character_Recognition/report/report.pdf) (Section 3)
