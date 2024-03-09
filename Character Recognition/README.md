@@ -78,6 +78,8 @@ The data path for running the command mentioned above points to the *monkbrill* 
 data_path = "./DSS/monkbrill/"  
  ```
 
+The training output is saved in the directory *./src/training/*. It includes the loss and accuracy curves, a summary of the model architecture, the trained model checkpoint in an HDF5/H5 file for use during testing, and the label encoder transformation in a pickle file. The latter facilitates consistent evaluation of test images through uniform label encoding.
+
 ---
 
 ### [**Output**](#) <a name="output"></a>
