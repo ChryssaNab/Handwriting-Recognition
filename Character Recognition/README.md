@@ -84,6 +84,12 @@ The data path for running the command mentioned above points to the *monkbrill* 
 data_path = "./DSS/monkbrill/"  
  ```
 
-The output for the training process is saved in the directory *./src/training/*. It includes the loss and accuracy curves, a summary of the model architecture, the trained model checkpoint in an HDF5/H5 file for use during testing, and the label encoder transformation in a pickle file. The latter facilitates consistent evaluation of test images through uniform label encoding.
+The output for the training process is saved under the directory *./src/training/*. It includes the loss and accuracy curves, a summary of the model architecture, the trained model checkpoint in an HDF5/H5 file for use during testing, and the label encoder transformation in a pickle file. The latter facilitates consistent evaluation of test images through uniform label encoding. Below, we showcase the learning curves of the trained model using the default settings.
+
+<p align="center">
+    <img title="Clusters: 2" src="https://github.com/ChryssaNab/Handwriting-Recognition/blob/main/Character%20Recognition/src/training/loss.jpg" height="360" width="500"/>
+     <img title="Clusters: 4" src="https://github.com/ChryssaNab/Handwriting-Recognition/blob/main/Character%20Recognition/src/training/accuracy.jpg" height="360" width="500"/>
+        
+</p>
 
 
