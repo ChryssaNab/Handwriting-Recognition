@@ -77,14 +77,14 @@ If you wish to train the model from scratch, run the following command:
  $ python3 src/training/train.py
  ```
 
-The data path for running the command mentioned above points to the *monkbrill* training data specified in `lines 132-133`, as demonstrated below:
+The data path for running the command above points to the *monkbrill* training data and is specified in the *train.py* script `lines 132-133`, as demonstrated below:
 
 ```python
 # Set path to the monkbrill data
 data_path = "./DSS/monkbrill/"  
  ```
 
-The output for the training process is saved under the directory *./src/training/*. It includes the loss and accuracy curves, a summary of the model architecture, the trained model checkpoint in an HDF5/H5 file for use during testing, and the label encoder transformation in a pickle file. The latter facilitates consistent evaluation of test images through uniform label encoding. Below, we showcase the learning curves of the trained model using the default settings.
+The output for the training process is stored under the directory *./src/training/*. It includes the loss and accuracy curves, a summary of the model architecture, the trained model checkpoint in an HDF5/H5 file for use during testing, and the label encoder transformation in a pickle file. The latter facilitates consistent evaluation of test images through uniform label encoding. Below, we showcase the learning curves of the trained model using the default settings.
 
 <p align="center">
     <img title="Loss curve" src="https://github.com/ChryssaNab/Handwriting-Recognition/blob/main/Character%20Recognition/src/training/loss.jpg" height="360" width="500"/>
