@@ -96,7 +96,7 @@ $ cp -r /path/to/source_folder/DSS ./
 Execute the *main.py* script to initiate the end-to-end pipeline and set the `--data_path`, to the *image-data* test set. This process involves segmenting the test imaging scripts into individual characters, recognizing them, and transcribing them into a text document. To facilitate this, a trained model named `model.h5`, located under the *./src/training/* directory, is loaded and utilized for predictions.
 
 ``` shell
- $ python3 src/main.py --data_path 'DATA_PATH'
+ $ python3 src/main.py --data_path ./DSS/image-data/
  ```
 
 ---
