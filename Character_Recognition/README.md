@@ -29,7 +29,7 @@ The current project was implemented in the context of the course "Handwriting Re
 
 ``` shell
 $ git clone https://github.com/ChryssaNab/Handwriting-Recognition.git
-$ cd Handwriting-Recognition/Character\ Recognition/
+$ cd Handwriting-Recognition/Character_Recognition/
 ```
 
  **3.** Create a new Python environment and activate it:
