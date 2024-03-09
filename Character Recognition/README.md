@@ -11,7 +11,7 @@
 
 ### [**Project Description**](#) <a name="descr"></a>
 
-Our project aims to recognize characters from ancient handwritten Hebrew texts, specifically those originating from the restricted collection known as the **Dead Sea Scrolls (DSS).**  Despite decay due to age, our goal is to efficiently digitize these texts. Our pipeline is designed to take as input images with complete handwritten Hebrew text from the Dead Sea Scrolls collection and output text documents containing the digitalized Hebrew characters present in the images.
+This project aims to recognize characters from ancient handwritten Hebrew texts, specifically those originating from the restricted collection known as the **Dead Sea Scrolls (DSS).**  Despite decay due to age, our goal is to efficiently digitize these texts. The pipeline is designed to take as input images with complete handwritten Hebrew text from the Dead Sea Scrolls collection and output text documents containing the digitalized Hebrew characters present in the images.
 
 This task involves a multi-step process: initially segmenting the textual images into lines and individual characters, followed by the recognition and transcription of these characters into a *.txt* format. To achieve this, we begin by training a 2D CNN specifically designed for Hebrew characters. Once trained, we employ this model to predict the characters segmented from the test images. 
 
