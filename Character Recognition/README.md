@@ -45,7 +45,7 @@ $ pip install -r requirements.txt
 
 ### [**Data Configuration**](#) <a name="dataset"></a>
 
-We assume that that the Dead Sea Scrolls (DSS) database has been previously downloaded onto the device and is stored within a directory labeled *DSS*. Within this directory, two sub-folders are present. The first, titled *image-data*, houses the complete test image scripts, while the second, named *monkbrill*, accommodates the training images. In particular, *monkbrill* comprises 27 sub-folders, each designated for a distinct Hebrew character. To proceed, copy the data directory into the project directory in the following manner:
+We assume that that the Dead Sea Scrolls (DSS) database has been previously downloaded onto the device and is stored within a directory labeled *DSS/*. Within this directory, two sub-folders are present. The first, titled *image-data/*, houses the complete test image scripts, while the second, named *monkbrill/*, accommodates the training images. In particular, *monkbrill* comprises 27 sub-folders, each designated for a distinct Hebrew character. To proceed, copy the data directory into the project directory in the following manner:
 
 ``` shell
 $ cp -r /path/to/source_folder/DSS ./
@@ -55,7 +55,7 @@ $ cp -r /path/to/source_folder/DSS ./
 
 ### [**Testing**](#) <a name="testing"></a>
 
-Execute the *main.py* script to initiate the end-to-end pipeline and set the `--data_path`, to the *image-data* test data. This process involves segmenting the test imaging scripts into individual characters, recognizing them, and transcribing them into a *.txt* format. To facilitate this, a trained model named `model.h5`, located under the *./src/training/* directory, is loaded and utilized for predictions.
+Execute the *main.py* script to initiate the end-to-end pipeline and set the `--data_path`, to the *image-data* test set. This process involves segmenting the test imaging scripts into individual characters, recognizing them, and transcribing them into a *.txt* format. To facilitate this, a trained model named `model.h5`, located under the *./src/training/* directory, is loaded and utilized for predictions.
 
 ``` shell
  $ python3 src/main.py --data_path 'DATA_PATH'
@@ -71,14 +71,14 @@ If you wish to train the model from scratch, run the following command:
  $ python3 src/training/train.py
  ```
 
-The data path for running the command mentioned above points to the *monkbrill* training data specified in lines 132-133, as demonstrated below:
+The data path for running the command mentioned above points to the *monkbrill* training data specified in `lines 132-133`, as demonstrated below:
 
 ```python
 # Set path to the monkbrill data
 data_path = "./DSS/monkbrill/"  
  ```
 
-The training output is saved in the directory *./src/training/*. It includes the loss and accuracy curves, a summary of the model architecture, the trained model checkpoint in an HDF5/H5 file for use during testing, and the label encoder transformation in a pickle file. The latter facilitates consistent evaluation of test images through uniform label encoding.
+The output for the training process is saved in the directory *./src/training/*. It includes the loss and accuracy curves, a summary of the model architecture, the trained model checkpoint in an HDF5/H5 file for use during testing, and the label encoder transformation in a pickle file. The latter facilitates consistent evaluation of test images through uniform label encoding.
 
 ---
 
