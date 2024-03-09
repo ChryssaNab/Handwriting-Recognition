@@ -57,13 +57,7 @@ We assume that the DSS database has been previously downloaded onto the device a
 
 We assume that the DSS database has been previously downloaded onto the device and is stored within a directory labeled *DSS/*. Inside this directory, two sub-folders are present. The first one, titled *image-data/*, contains the complete set of test image scripts. Before executing the entire pipeline for character segmentation and recognition, it is crucial to verify that the dataset adheres to the correct naming convention. This entails ensuring that all binarized file versions include the word 'binarized' in their filenames.  In total, there are 20 binarized Hebrew imaging texts for testing.
 
-Furthermore, the second sub-folder, named *monkbrill/*, accommodates the training images. Specifically, *monkbrill* consists of 27 sub-folders, each designated for a distinct Hebrew character. To proceed, please copy the data directory into the project directory using the following command:
-
-``` shell
-$ cp -r /path/to/source_folder/DSS ./
-```
-
-The structure of the data folder is outlined as follows:
+Furthermore, the second sub-folder, named *monkbrill/*, accommodates the training images. In particular, *monkbrill* comprises 27 sub-folders, each designated for a distinct Hebrew character. The structure of the data folder is outlined as follows:
 
 ``` bash
 DSS/
@@ -86,7 +80,13 @@ DSS/
         ├── navis-QIrug-Qumran_extr09_0001-line-005-y1=334-y2=443-zone-HUMAN-x=1672-y=0032-w=0033-h=0039-ybas=0030-nink=518-segm=COCOS5cocos.pgm
         └── ...
     └── ...
-``` 
+```
+
+To proceed, please copy the data directory into the project directory using the following command:
+
+``` shell
+$ cp -r /path/to/source_folder/DSS ./
+```
 
 
 ---
