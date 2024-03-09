@@ -77,7 +77,7 @@ If you wish to train the model from scratch, run the following command:
  $ python3 src/training/train.py
  ```
 
-The data path for running the command above points to the *monkbrill* training data and is specified in the *train.py* script `lines 132-133`, as demonstrated below:
+The data path for running the command above points to the *monkbrill* training data and is specified in the *train.py* `lines 132-133`, as demonstrated below:
 
 ```python
 # Set path to the monkbrill data
