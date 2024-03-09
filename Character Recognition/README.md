@@ -11,11 +11,11 @@
 
 ### [**Project Description**](#) <a name="descr"></a>
 
-In this project, our goal is to recognize characters from ancient handwritten Hebrew text which has decayed due to age. For this purpose, we use a private collection named Dead Sea Scrolls (DSS). The pipeline will be able to take as input an image with handwritten Hebrew text from the Dead Sea Scrolls, and output a text document containing the digitalized Hebrew characters occurring in such a text image. 
+In this project, our objective is to recognize characters from ancient handwritten Hebrew texts, such as the ones found in the restricted collection known as the Dead Sea Scrolls (DSS). Despite decay due to age, we aim to digitize these texts effectively. Our pipeline is designed to take as input an image with handwritten Hebrew text from the Dead Sea Scrolls collection, and output a text document containing the digitalized Hebrew characters present in the images.
 
-This task involves a multi-step process: first, segmenting the textual images into lines and then individual characters; next, recognizing and transcribing these characters into a *.txt* format. To achieve this, we begin by training a 2D CNN specifically designed for Hebrew characters. Once trained, we employ this model to predict the characters segmented from the test images. 
+This task involves a multi-step process: initially segmenting the textual images into lines and individual characters, followed by the recognition and transcription of these characters into a *.txt* format. To achieve this, we begin by training a 2D CNN specifically designed for Hebrew characters. Once trained, we employ this model to predict the characters segmented from the test images. 
 
-The current project was implemented in the context of the course "Handwriting Recognition" taught by Professors Lambert Schomaker and Maruf A. Dhali at University of Groningen.
+The current project was implemented in the context of the course "Handwriting Recognition" taught by Professors [Lambert Schomaker](https://www.ai.rug.nl/~lambert/) and [Maruf A. Dhali](https://www.rug.nl/staff/m.a.dhali/) at [University of Groningen](https://www.rug.nl/).
 
 
 
