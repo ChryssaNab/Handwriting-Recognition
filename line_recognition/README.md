@@ -72,7 +72,7 @@ The data was divided into three subsets: train, validation, and test sets. The t
 The complete workflow of our line recognition system is illustrated below. The blue pathway depicts the training process, whereas the red pathway represents the testing process.
 
 <p align="center">
-    <img title="Methodology overview" src="https://github.com/ChryssaNab/Handwriting-Recognition/blob/main/line_recognition/imgs/pipeline.pdf" height="340" width="540"/>
+    <img title="Methodology overview" src="https://github.com/ChryssaNab/Handwriting-Recognition/blob/main/line_recognition/imgs/pipeline.png" height="340" width="540"/>
         
 </p>
 
