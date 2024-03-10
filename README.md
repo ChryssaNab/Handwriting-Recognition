@@ -31,6 +31,6 @@ U. Marti & H. Bunke (2002). The IAM-database: An English sentence database for o
 ### Team
 
 - [Chryssa Nampouri](https://github.com/ChryssaNab)
-- Shray Juneja
-- Luca Mueller
+- [Shray Juneja](https://github.com/Shray15)
+- [Luca Mueller](https://github.com/Luca-Mueller)
 - Wopke de Vries
