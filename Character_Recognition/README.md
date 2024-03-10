@@ -1,4 +1,4 @@
-# Character Segmentation and Recognition for Dead Sea Scrolls Database
+# Character Segmentation and Recognition for the <br > Dead Sea Scrolls Database
 
 ### [**Contents**](#)
 1. [Project Description](#descr)
@@ -23,7 +23,7 @@ The current project was implemented in the context of the course "Handwriting Re
 
 ### [**Setup**](#) <a name="setup"></a>
 
-**1.** We assume that Python3 is already installed on the system and the Dead Sea Scrolls (DDS) database is downloaded.
+**1.** We assume that Python3 is already installed on the system. The code has been specifically tested on Python version 3.10.
 
 **2.** Clone this repository: 
 
@@ -55,9 +55,9 @@ $ pip install -r requirements.txt
 We assume that the DSS database has been previously downloaded onto the device and is stored within a directory labeled *DSS/*. Within this directory, two sub-folders are present. The first, titled *image-data/*, houses the complete test image scripts, while the second, named *monkbrill/*, accommodates the training images. In particular, *monkbrill* comprises 27 sub-folders, each designated for a distinct Hebrew character. To proceed, copy the data directory into the project directory in the following manner:
 -->
 
-We assume that the DSS database has been previously downloaded onto the device and is stored within a directory labeled *DSS/*. Inside this directory, two sub-folders are present. The first one, titled *image-data/*, contains the complete set of test image scripts. Before executing the entire pipeline for character segmentation and recognition, it is crucial to verify that the dataset adheres to the correct naming convention. This entails ensuring that all binarized file versions include the word 'binarized' in their filenames.  In total, there are 20 binarized Hebrew imaging texts for testing.
+We assume that the DSS database has been previously downloaded onto the device and is stored within a directory labeled *DSS/*. Inside this directory, two sub-folders are present. The first one, titled *image-data/*, contains the complete set of test image scripts. Before executing the entire pipeline for character segmentation and recognition, it is crucial to verify that the dataset adheres to the correct naming convention. This entails ensuring that all binarized file versions include the word 'binarized' in their filenames. In total, there are 20 binarized Hebrew imaging texts for testing.
 
-Furthermore, the second sub-folder, named *monkbrill/*, accommodates the training images. In particular, *monkbrill* comprises 27 sub-folders, each designated for a distinct Hebrew character. The structure of the data folder is outlined as follows:
+Furthermore, the second sub-folder, named *monkbrill/*, accommodates the training images. In particular, *monkbrill* comprises 27 sub-folders, each designated for a distinct Hebrew character for training. The structure of the parent data folder is outlined as follows:
 
 ``` bash
 DSS/
@@ -93,11 +93,14 @@ $ cp -r /path/to/source_folder/DSS ./
 
 ### [**Testing**](#) <a name="testing"></a>
 
-Execute the *main.py* script to initiate the end-to-end pipeline and set the `--data_path`, to the *image-data* test set. This process involves segmenting the test imaging scripts into individual characters, recognizing them, and transcribing them into a text document. To facilitate this, a trained model named `model.h5`, located under the *./src/training/* directory, is loaded and utilized for predictions.
+Execute the *main.py* script to initiate the end-to-end pipeline and set the `--data_path`, to the *image-data/* test set. This process involves segmenting the test imaging scripts into individual characters, recognizing them, and transcribing them into a text document. To facilitate this, a trained model named `model.h5`, located under the *./src/training/* directory, is loaded and utilized for predictions.
 
 ``` shell
  $ python3 src/main.py --data_path ./DSS/image-data/
  ```
+
+The output for this procedure is stored within the directory *./results/*. It comprises two main sub-folders. The first, named *segmentation_output/*, houses the segmented lines and characters for each Hebrew text. The second, named *transcript_output/*, contains a text document for each Hebrew text, comprising the transcribed characters after they have been segmented and recognized from the original image.
+
 
 ---
 
@@ -109,7 +112,7 @@ If you wish to train the model from scratch, run the following command:
  $ python3 src/training/train.py
  ```
 
-The data path for running the command above points to the *monkbrill* training data and is specified in the *train.py* `lines 132-133`, as demonstrated below:
+The data path for running the command above points to the *monkbrill/* training data and is specified in the *train.py* `lines 132-133`, as demonstrated below:
 
 ```python
 # Set path to the monkbrill data
