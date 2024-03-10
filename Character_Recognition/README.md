@@ -15,8 +15,6 @@ This project aims to recognize characters from ancient handwritten Hebrew texts,
 
 This task involves a multi-step process: initially segmenting the textual images into lines and individual characters, followed by the recognition and transcription of these characters into *.txt* format. To achieve this, we begin by training a 2D CNN specifically designed for Hebrew characters. Once trained, we employ this model to predict the characters segmented from the test images. 
 
-The current project was implemented in the context of the course "Handwriting Recognition" taught by Professors [Lambert Schomaker](https://www.ai.rug.nl/~lambert/) and [Maruf A. Dhali](https://www.rug.nl/staff/m.a.dhali/) at [University of Groningen](https://www.rug.nl/).
-
 
 
 ---
