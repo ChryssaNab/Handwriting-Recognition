@@ -40,7 +40,7 @@ def train_model(final: bool = False) -> None:
 
     # Create paths for logs, models, checkpoints
     print("Setting up results folder...")
-    root_dir = Path("../") / "iam_results"
+    root_dir = Path("./") / "results"
     paths = make_dirs(root_dir)
 
     # Load & save settings
@@ -181,7 +181,7 @@ def test_model(model_path, img_path) -> None:
     print(model.summary())
 
     # Load model settings
-    model_settings = load_settings(Path("../iam_results/run_final_model/settings/LSTM_model_settings.json"))
+    model_settings = load_settings(Path("./results/run_final_model/settings/LSTM_model_settings.json"))
     image_width = model_settings["image_width"]
 
     # Load & preprocess images
@@ -239,7 +239,7 @@ def main():
 
     # Data & model path
     img_path = args.path
-    model_path = Path("../iam_results/run_final_model/model/LSTM_model.h5")
+    model_path = Path("./results/run_final_model/model/LSTM_model.h5")
 
     # Run train or test
     if mode == "train":
