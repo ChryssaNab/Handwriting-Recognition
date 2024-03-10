@@ -2,10 +2,11 @@
 
 ### [**Contents**](#)
 1. [Project Description](#descr)
-1. [Setup](#setup)
-2. [Data Configuration](#dataset)
-3. [Testing](#testing)
-4. [Training](#training)
+2. [Setup](#setup)
+3. [Data Configuration](#dataset)
+4. [Methodology Overview](#methodology)
+5. [Testing](#testing)
+6. [Training](#training)
 
 ---
 
@@ -86,6 +87,18 @@ To proceed, please copy the data directory into the project directory using the 
 $ cp -r /path/to/source_folder/DSS ./
 ```
 
+
+---
+
+
+### [**Methodology Overview**](#) <a name="methodology"></a>
+
+The entire workflow of our character recognition system is depicted below. The red boxes represent the stream from raw input documents to their ultimate transcription; the blue boxes depict the training process on the Hebrew characters, while the yellow boxes represent the two models employed for recognition.
+
+<p align="center">
+    <img title="Methodology overview" src="https://github.com/ChryssaNab/Handwriting-Recognition/blob/main/character_recognition/imgs/pipeline.png" height="450" width="430"/>
+        
+</p>
 
 ---
 
