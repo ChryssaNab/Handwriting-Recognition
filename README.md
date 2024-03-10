@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Handwriting Recognition
 <!--
 Offline Handwritten Text Recognition (HRT) is an active field of research that deals with the transcription of handwritten text contained in images. For humans this is mostly trivial (depending on the handwriting), but there are a number of challenges with the automation of this task. We received two datasets, the Dead Sea Scrolls (DSS) and IAM lines. Both differ in type and quality of the data and therefore require separate approaches. The DSS dataset contains
@@ -35,11 +34,3 @@ U. Marti & H. Bunke (2002). The IAM-database: An English sentence database for o
 - Shray Juneja
 - Luca Mueller
 - Wopke de Vries
-=======
-# Task 3
-
-To install:
-* go to Handwriting_Recognition-RUG folder
-* checkout task3
-* pip install -e ./
->>>>>>> task3
