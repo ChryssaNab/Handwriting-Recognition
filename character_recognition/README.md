@@ -27,7 +27,7 @@ This task involves a multi-step process: initially segmenting the textual images
 
 ``` shell
 $ git clone https://github.com/ChryssaNab/Handwriting-Recognition.git
-$ cd Handwriting-Recognition/Character_Recognition/
+$ cd Handwriting-Recognition/character_recognition/
 ```
 
  **3.** Create a new Python environment and activate it:
