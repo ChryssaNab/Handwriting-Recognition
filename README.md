@@ -10,14 +10,14 @@ The DSS dataset comprises aged Hebrew text that has deteriorated over time and i
 
 The current project was implemented in the context of the course "Handwriting Recognition" taught by Professors [Lambert Schomaker](https://www.ai.rug.nl/~lambert/) and [Maruf A. Dhali](https://www.rug.nl/staff/m.a.dhali/) at [University of Groningen](https://www.rug.nl/).
 
-### 1st Assignment: [Character Segmentation and Recognition on the DSS Collection](https://github.com/ChryssaNab/Handwriting-Recognition/tree/main/Character_Recognition)
+### 1st Assignment: [Character Segmentation and Recognition on the DSS Collection](https://github.com/ChryssaNab/Handwriting-Recognition/tree/main/character_recognition)
 1. [Project Description](https://github.com/ChryssaNab/Handwriting-Recognition/blob/main/HWR_Project_description.pdf) (Task 1 & 2)
-2. [Implementation](https://github.com/ChryssaNab/Handwriting-Recognition/tree/main/Character_Recognition/src)
-3. [Report](https://github.com/ChryssaNab/Handwriting-Recognition/blob/main/Character_Recognition/report/report.pdf) (Section 3)
-### 2nd Assignment: [Line Recognition on the IAM Dataset]()
+2. [Implementation](https://github.com/ChryssaNab/Handwriting-Recognition/tree/main/character_recognition/src)
+3. [Report](https://github.com/ChryssaNab/Handwriting-Recognition/blob/main/report/report.pdf) (Section 3)
+### 2nd Assignment: [Line Recognition on the IAM Dataset](https://github.com/ChryssaNab/Handwriting-Recognition/tree/main/line_recognition)
 1. [Project Description](https://github.com/ChryssaNab/Handwriting-Recognition/blob/main/HWR_Project_description.pdf) (Task 3)
-2. [Implementation]()
-3. [Report](https://github.com/ChryssaNab/Handwriting-Recognition/blob/main/Character_Recognition/report/report.pdf) (Section 4)
+2. [Implementation](https://github.com/ChryssaNab/Handwriting-Recognition/tree/main/line_recognition/src)
+3. [Report](https://github.com/ChryssaNab/Handwriting-Recognition/blob/main/report/report.pdf) (Section 4)
 
 ---
 
