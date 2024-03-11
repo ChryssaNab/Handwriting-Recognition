@@ -110,7 +110,7 @@ Execute the *main.py* script to initiate the end-to-end pipeline and set the `--
  $ python3 src/main.py --data_path ./DSS/image-data/
  ```
 
-The output for this procedure is stored within the directory *./results/*. It comprises two main sub-folders. The first, named *segmentation_output/*, houses the segmented lines and characters for each Hebrew text. The second, named *transcript_output/*, contains a text document for each Hebrew text, comprising the transcribed characters after they have been segmented and recognized from the original image.
+The output for this procedure is stored within the directory *./results/*. It comprises two main sub-folders. The first, named *segmentation_output/*, houses the segmented lines and characters for each Hebrew text. The second, named *transcript_output/*, contains a text document for each Hebrew text image, comprising the transcribed characters after they have been segmented and recognized from the original image.
 
 
 ---
