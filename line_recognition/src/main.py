@@ -91,7 +91,7 @@ def train_model(final: bool = False) -> None:
     print(train_model.summary())
 
     # Save summary
-    with open(paths.model / "model.txt", 'w') as file:
+    with open("./src/model.txt", 'w') as file:
         train_model.summary(print_fn=lambda x: file.write(x + '\n'))
 
     # Callbacks
