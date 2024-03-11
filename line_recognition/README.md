@@ -5,8 +5,9 @@
 2. [Setup](#setup)
 3. [Data Configuration](#dataset)
 4. [Methodology Overview](#methodology)
-5. [Training](#training)
-6. [Testing](#testing)
+5. [Execution](#execution)
+6. [Training](#training)
+7. [Testing](#testing)
 
 ---
 
@@ -77,6 +78,32 @@ The complete workflow of our line recognition system is illustrated below. The b
     <img title="Methodology overview" src="https://github.com/ChryssaNab/Handwriting-Recognition/blob/main/line_recognition/imgs/pipeline.png" height="340" width="545"/>
         
 </p>
+
+
+---
+
+### [**Execution**](#) <a name="execution"></a>
+The primary execution script for the entire project is the *main.py* file within the *src/* directory. To view usage information run the following command:
+
+``` shell
+$ python3 src/main.py -h
+
+usage: main.py [-h] [--mode {train,test}] [--debug] [--final] [path]
+
+args for IAM main
+
+positional arguments:
+  path                 path to 'img' (test) or 'IAM-data' (train)
+
+options:
+  -h, --help           show this help message and exit
+  --mode {train,test}  train or test model (default test)
+  --debug              use debug mode (default False)
+  --final              train model on the whole data set (default False)
+
+```
+
+The possible arguments for configuring and training the LSTM model are specified within the *settings.py* script.
 
 ---
 
