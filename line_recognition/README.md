@@ -11,7 +11,7 @@
 ---
 
 ### [**Project Description**](#) <a name="descr"></a>
-
+This project aims to perform line recognition on a subset of the **IAM database**, which comprises handwritten English sentences. Our subset includes 7458 text images, each accompanied by its corresponding transcription label. With access to complete sentence labels, we can implement an end-to-end system for line recognition. To achieve this, we adopt the model proposed by Scheidl (2018) in his PhD thesis [[1]](#1). This model consists of a CNN followed by bidirectional LSTM layers. These layers are fed with image features in the form of time-series data. Lastly, a softmax output layer is appended to the model. This layer enables the calculation of the Connectionist Temporal Classification (CTC) loss [[2]](#2), which assists in determining the gradients.
 
 
 ---
@@ -151,3 +151,13 @@ $ cp -r ./results/$current_date/settings ./results/run_final_model/
 ``` python
 $ python3 src/main.py  ./IAM-data/ --mode test
 ```
+
+---
+
+### References 
+
+<a id="1">[1]</a> 
+Harald Scheidl. Handwritten text recognition in historical documents. PhD thesis, Wien, 2018.
+
+<a id="2">[2]</a> 
+Alex Graves, Santiago Fernández, Faustino Gomez, and Jürgen Schmidhuber. 2006. Connectionist temporal classification: labelling unsegmented sequence data with recurrent neural networks. *In Proceedings of the 23rd international conference on Machine learning (ICML '06). Association for Computing Machinery, New York, NY, USA, 369–376. https://doi.org/10.1145/1143844.1143891*.
