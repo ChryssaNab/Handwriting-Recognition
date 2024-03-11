@@ -89,7 +89,7 @@ def train_model(final: bool = False) -> None:
     train_model = build_lstm_model(len(tokens), image_width)
     train_model.compile(optimizer=optimizer)
     print(train_model.summary())
-
+    
     # Save summary
     with open("./src/model.txt", 'w') as file:
         train_model.summary(print_fn=lambda x: file.write(x + '\n'))
@@ -210,7 +210,7 @@ def test_model(model_path, img_path) -> None:
     label_padding = LabelPadding(pad_value=pad_value, max_len=max_label_len)
 
     # Create results folder
-    results_path = Path("./results")
+    results_path = Path("./results/inference/")
     results_path.mkdir(exist_ok=True)
 
     if DEBUG:
