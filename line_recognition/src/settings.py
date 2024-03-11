@@ -18,7 +18,7 @@ def get_lstm_settings(debug: bool = False) -> Dict[str, Any]:
     settings = {
 
         # Training
-        "epochs":           50,
+        "epochs":           30,
         "batch_size":       24,
         "optimizer":        {
                              'class_name':  'RMSprop',
