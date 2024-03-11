@@ -112,7 +112,7 @@ $ python3 src/main.py  ./IAM-data/ --mode train
 This command loads the *IAM-data*, preprocesses it, splits it into train, validation, and test sets, and performs line recognition using the provided ground-truth labels. The output of this procedure is stored in the directory *./results/$current_date/*. It includes the trained model checkpoint from the last epoch in a `.h5` file, logs of the training and validation processes, and the training settings in a `.json` file. Additionally, two prevalent error measures in HTR, the *Character Error Rate (CER)* and the *Word Error Rate (WER)*, are printed in the command-line for each epoch for the test set.
 -->
 
-This command loads the *IAM-data*, preprocesses it, splits it into train, validation, and test sets, and performs end-to-end line recognition using the provided ground-truth labels. The output of this procedure is stored under the directory *./results/$current_date/*. It comprises three primary sub-folders:
+This command loads the *IAM-data*, preprocesses it, splits it into train, validation, and test sets, and conducts end-to-end line recognition using the provided ground-truth labels. The output of this procedure is stored under the directory *./results/$current_date/*. It comprises three primary sub-folders:
 
  - The first, named *logs/*, holds the logs of the training and validation processes, along with a text document named *output.txt* containing the model's predictions and ground-truth labels for each image.
  - The second, titled *model/*, stores the model checkpoint from the last epoch as *LSTM_model.h5*.
@@ -138,7 +138,7 @@ Moreover, two common error metrics in HTR, the *Character Error Rate (CER)* and 
 $ python3 src/main.py  ./IAM-data/ --mode train --final
 ```
 
-**2.** Transfer the desired model and training settings folders to the directory path *./results/run_final_model/*. Make sure to update the $current_date accordingly.
+**2.** Transfer the desired model and training settings folders to the directory path "*./results/run_final_model/*". Make sure to update the */$current_date/* accordingly.
 
 ``` shell
 $ mkdir -p ./results/run_final_model/
