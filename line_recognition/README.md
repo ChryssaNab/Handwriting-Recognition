@@ -5,6 +5,8 @@
 2. [Setup](#setup)
 3. [Data Configuration](#dataset)
 4. [Methodology Overview](#methodology)
+5. [Training](#training)
+6. [Testing](#testing)
 
 ---
 
@@ -78,3 +80,10 @@ The complete workflow of our line recognition system is illustrated below. The b
 
 ---
 
+### [**Training**](#) <a name="training"></a>
+
+
+
+---
+
+### [**Testing**](#) <a name="testing"></a>
