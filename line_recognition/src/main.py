@@ -90,6 +90,10 @@ def train_model(final: bool = False) -> None:
     train_model.compile(optimizer=optimizer)
     print(train_model.summary())
 
+    # Save summary
+    with open(paths.model / "model.txt", 'w') as file:
+        train_model.summary(print_fn=lambda x: file.write(x + '\n'))
+
     # Callbacks
     error_cb = ErrorRateCallback(val_ds, label_encoder, label_padding, log_dir=paths.logs / "validation")
     tensorboard_cb = tf.keras.callbacks.TensorBoard(log_dir=paths.logs)
