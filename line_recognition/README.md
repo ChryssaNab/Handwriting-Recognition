@@ -118,7 +118,14 @@ This command loads the *IAM-data*, preprocesses it, splits it into train, valida
  - The second, titled *model/*, stores the model checkpoint from the last epoch as *LSTM_model.h5*.
  - The third, labeled *settings/*, encompasses all the settings and configurations utilized during the training process.
    
-Moreover, two common error metrics in HTR, the *Character Error Rate (CER)* and the *Word Error Rate (WER)*, are printed in the command-line output for each epoch for the test set.
+Moreover, two common error metrics in HTR, the *Character Error Rate (CER)* and the *Word Error Rate (WER)*, are printed in the command-line output for each epoch for the test set. Below, we showcase the learning curves of the trained model on the validation set using the default settings.
+
+<p align="center">
+    <img title="Loss curve" src="https://github.com/ChryssaNab/Handwriting-Recognition/blob/main/line_recognition/imgs/best_model_val_cer.png" height="360" width="500"/>
+     <img title="Accuracy curve" src="https://github.com/ChryssaNab/Handwriting-Recognition/blob/main/line_recognition/imgs/best_model_val_wer.png" height="360" width="500"/>
+        
+</p>
+
 
 ---
 
