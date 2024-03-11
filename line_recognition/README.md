@@ -152,6 +152,8 @@ $ cp -r ./results/$current_date/settings ./results/run_final_model/
 $ python3 src/main.py  ./IAM-data/img/ --mode test
 ```
 
+The output of the inference process is stored in the directory *./results/inference/*. This directory contains a text document for each image containing the corresponding transcribed text.
+
 ---
 
 ### References 
