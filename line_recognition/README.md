@@ -149,7 +149,7 @@ $ cp -r ./results/$current_date/settings ./results/run_final_model/
 **3.** Run the *main.py* script, setting the `--mode` argument to `test`:
 
 ``` python
-$ python3 src/main.py  ./IAM-data/ --mode test
+$ python3 src/main.py  ./IAM-data/img/ --mode test
 ```
 
 ---
