@@ -1,0 +1,68 @@
+Model: "LSTM_model"
+__________________________________________________________________________________________________
+ Layer (type)                   Output Shape         Param #     Connected to                     
+==================================================================================================
+ Image (InputLayer)             [(None, 1000, 64, 1  0           []                               
+                                )]                                                                
+                                                                                                  
+ Data_Augmentation (Sequential)  (None, 1000, 64, 1)  0          ['Image[0][0]']                  
+                                                                                                  
+ Conv_1 (Conv2D)                (None, 1000, 64, 64  1664        ['Data_Augmentation[0][0]']      
+                                )                                                                 
+                                                                                                  
+ MaxPool_1 (MaxPooling2D)       (None, 500, 32, 64)  0           ['Conv_1[0][0]']                 
+                                                                                                  
+ Conv_2 (Conv2D)                (None, 500, 32, 128  204928      ['MaxPool_1[0][0]']              
+                                )                                                                 
+                                                                                                  
+ MaxPool_2 (MaxPooling2D)       (None, 500, 16, 128  0           ['Conv_2[0][0]']                 
+                                )                                                                 
+                                                                                                  
+ Conv_3 (Conv2D)                (None, 500, 16, 128  147584      ['MaxPool_2[0][0]']              
+                                )                                                                 
+                                                                                                  
+ MaxPool_3 (MaxPooling2D)       (None, 250, 8, 128)  0           ['Conv_3[0][0]']                 
+                                                                                                  
+ BatchNorm_1 (BatchNormalizatio  (None, 250, 8, 128)  512        ['MaxPool_3[0][0]']              
+ n)                                                                                               
+                                                                                                  
+ Conv_4 (Conv2D)                (None, 250, 8, 256)  295168      ['BatchNorm_1[0][0]']            
+                                                                                                  
+ Conv_5 (Conv2D)                (None, 250, 8, 256)  590080      ['Conv_4[0][0]']                 
+                                                                                                  
+ MaxPool_4 (MaxPooling2D)       (None, 250, 4, 256)  0           ['Conv_5[0][0]']                 
+                                                                                                  
+ Conv_6 (Conv2D)                (None, 250, 4, 512)  1180160     ['MaxPool_4[0][0]']              
+                                                                                                  
+ MaxPool_5 (MaxPooling2D)       (None, 250, 2, 512)  0           ['Conv_6[0][0]']                 
+                                                                                                  
+ BatchNorm_2 (BatchNormalizatio  (None, 250, 2, 512)  2048       ['MaxPool_5[0][0]']              
+ n)                                                                                               
+                                                                                                  
+ Conv_7 (Conv2D)                (None, 250, 2, 512)  2359808     ['BatchNorm_2[0][0]']            
+                                                                                                  
+ MaxPool_6 (MaxPooling2D)       (None, 250, 1, 512)  0           ['Conv_7[0][0]']                 
+                                                                                                  
+ Collapse (Reshape)             (None, 250, 512)     0           ['MaxPool_6[0][0]']              
+                                                                                                  
+ BiDir_LSTM_1 (Bidirectional)   (None, 250, 1024)    4198400     ['Collapse[0][0]']               
+                                                                                                  
+ BiDir_LSTM_2 (Bidirectional)   (None, 250, 1024)    6295552     ['BiDir_LSTM_1[0][0]']           
+                                                                                                  
+ Output_Dense (Dense)           (None, 250, 81)      83025       ['BiDir_LSTM_2[0][0]']           
+                                                                                                  
+ Label (InputLayer)             [(None, None)]       0           []                               
+                                                                                                  
+ Output_Softmax (Softmax)       (None, 250, 81)      0           ['Output_Dense[0][0]']           
+                                                                                                  
+ CTC_Loss (CTCLossLayer)        (None, 250, 81)      0           ['Label[0][0]',                  
+                                                                  'Output_Softmax[0][0]']         
+                                                                                                  
+ CTC_Decoding (CTCDecodingLayer  (None, 250)         0           ['CTC_Loss[0][0]']               
+ )                                                                                                
+                                                                                                  
+==================================================================================================
+Total params: 15,358,929
+Trainable params: 15,357,649
+Non-trainable params: 1,280
+__________________________________________________________________________________________________
