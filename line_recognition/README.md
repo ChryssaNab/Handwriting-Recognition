@@ -102,14 +102,45 @@ options:
 
 ```
 
-The possible arguments for configuring and training the LSTM model are specified within the *settings.py* script. To train, validate, and test the model run the following command:
+The possible arguments for configuring and training the LSTM model are specified within the *settings.py* script. To train, validate, and test the model on the IAM dataset run the following command:
 
 ``` python
 $ python3 src/main.py  ./IAM-data/ --mode train
 ```
 
+<!--
 This command loads the *IAM-data*, preprocesses it, splits it into train, validation, and test sets, and performs line recognition using the provided ground-truth labels. The output of this procedure is stored in the directory *./results/$current_date/*. It includes the trained model checkpoint from the last epoch in a `.h5` file, logs of the training and validation processes, and the training settings in a `.json` file. Additionally, two prevalent error measures in HTR, the *Character Error Rate (CER)* and the *Word Error Rate (WER)*, are printed in the command-line for each epoch for the test set.
+-->
+
+This command loads the *IAM-data*, preprocesses it, splits it into train, validation, and test sets, and performs line recognition using the provided ground-truth labels. The output of this procedure is stored in the directory *./results/$current_date/*. It comprises three primary sub-folders:
+
+ - The first, named *logs/*, holds the logs of the training and validation processes, along with a text document named *output.txt* containing the model's predictions and ground-truth labels for each image.
+ - The second, titled *model/*, stores the model checkpoint from the last epoch as *LSTM_model.h5*.
+ - The third, labeled *settings/*, encompasses all the settings and configurations utilized during the training process.
+   
+Moreover, two common error metrics in HTR, the *Character Error Rate (CER)* and the *Word Error Rate (WER)*, are printed in the command-line output for each epoch for the test set.
 
 ---
 
 ### [**Inference**](#) <a name="inference"></a>
+
+
+**1.**  Train the model on the whole IAM dataset, setting the `--final` argument to `True`:
+
+``` python
+$ python3 src/main.py  ./IAM-data/ --mode train --final
+```
+
+**2.** Save the model and training settings to the directory path *./results/run_final_model/*. Ensure to update the $current_date accordingly.
+
+``` shell
+$ mkdir -p ./results/run_final_model/
+$ cp -r ./results/$current_date/model ./results/run_final_model/
+$ cp -r ./results/$current_date/settings ./results/run_final_model/
+```
+
+**3.** Run the *main.py* script, setting the `--mode` argument to `test`:
+
+``` python
+$ python3 src/main.py  ./IAM-data/ --mode test
+```
