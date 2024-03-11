@@ -108,7 +108,7 @@ The possible arguments for configuring and training the LSTM model are specified
 $ python3 src/main.py  ./IAM-data/ --mode train
 ```
 
-This command loads the *IAM-data*, preprocesses it, splits it into train, validation, and test sets, and performs line recognition using the provided ground-truth labels. The output of this procedure is stored in the directory *./results/$current_date/*. It includes the trained model checkpoint from the last epoch in a `.h5` file, logs of the training and validation processes, and the training settings in a `.json` file. Additionally, two prevalent error measures in HTR, the *Character Error Rate (CER)* and the *Word Error Rate (WER)*, are displayed in the output for each epoch.
+This command loads the *IAM-data*, preprocesses it, splits it into train, validation, and test sets, and performs line recognition using the provided ground-truth labels. The output of this procedure is stored in the directory *./results/$current_date/*. It includes the trained model checkpoint from the last epoch in a `.h5` file, logs of the training and validation processes, and the training settings in a `.json` file. Additionally, two prevalent error measures in HTR, the *Character Error Rate (CER)* and the *Word Error Rate (WER)*, are printed in the command-line for each epoch for the test set.
 
 ---
 
