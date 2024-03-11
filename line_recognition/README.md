@@ -65,7 +65,7 @@ To proceed, please copy the data directory into the project directory using the 
 $ cp -r /path/to/source_folder/IAM-data ./
 ```
 
-The data was divided into three subsets: train, validation, and test sets. The test set comprises the last 20% of our dataset, while the remaining data is shuffled. An additional 20% is then removed for validation. This leaves us with a training set that accounts for 64% of the initial dataset.
+The data is divided into three subsets: train, validation, and test sets. The test set comprises the last 20% of our dataset, while the remaining data is shuffled. An additional 20% is then removed for validation. This leaves us with a training set that accounts for 64% of the initial dataset.
 
 ---
 
@@ -152,7 +152,7 @@ $ cp -r ./results/$current_date/settings ./results/run_final_model/
 $ python3 src/main.py  ./IAM-data/img/ --mode test
 ```
 
-The output of the inference process is stored in the directory *./results/inference/*. This directory contains a text document for each image containing the corresponding transcribed text.
+The output of the inference process is stored in the directory *./results/inference/*. This directory contains a text document for each input image containing the corresponding transcribed text.
 
 ---
 
