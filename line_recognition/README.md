@@ -13,6 +13,7 @@
 ### [**Project Description**](#) <a name="descr"></a>
 This project aims to perform line recognition on a subset of the **IAM database**, which comprises handwritten English sentences. Our subset includes 7458 text images, each accompanied by its corresponding transcription label. With access to complete sentence labels, we can implement an end-to-end system for line recognition. To achieve this, we adopt the model proposed by Scheidl (2018) in his PhD thesis [[1]](#1). This model consists of a CNN followed by bidirectional LSTM layers. These layers are fed with image features in the form of time-series data. Lastly, a softmax output layer is appended to the model. This layer enables the calculation of the Connectionist Temporal Classification (CTC) loss [[2]](#2), which assists in determining the gradients.
 
+For a comprehensive overview of the methodology and final results, please refer to the [Report (Section 4)](https://github.com/ChryssaNab/Handwriting-Recognition/blob/main/report/report.pdf).
 
 ---
 
@@ -65,7 +66,7 @@ To proceed, please copy the data directory into the project directory using the 
 $ cp -r /path/to/source_folder/IAM-data ./
 ```
 
-The data is divided into three subsets: train, validation, and test sets. The test set comprises the last 20% of our dataset, while the remaining data is shuffled. An additional 20% is then removed for validation. This leaves us with a training set that accounts for 64% of the initial dataset.
+The data is divided into three subsets: train, validation, and test sets. The test set comprises the last 20% of the dataset, while the remaining data is shuffled. An additional 20% is then removed for validation. This leaves us with a training set that accounts for 64% of the initial dataset.
 
 ---
 
@@ -98,7 +99,7 @@ options:
   -h, --help           show this help message and exit
   --mode {train,test}  train or test model (default test)
   --debug              use debug mode (default False)
-  --final              train model on the whole data set (default False)
+  --final              train model on the whole dataset (default False)
 
 ```
 
@@ -112,7 +113,7 @@ $ python3 src/main.py  ./IAM-data/ --mode train
 This command loads the *IAM-data*, preprocesses it, splits it into train, validation, and test sets, and performs line recognition using the provided ground-truth labels. The output of this procedure is stored in the directory *./results/$current_date/*. It includes the trained model checkpoint from the last epoch in a `.h5` file, logs of the training and validation processes, and the training settings in a `.json` file. Additionally, two prevalent error measures in HTR, the *Character Error Rate (CER)* and the *Word Error Rate (WER)*, are printed in the command-line for each epoch for the test set.
 -->
 
-This command loads the *IAM-data*, preprocesses it, splits it into train, validation, and test sets, and conducts end-to-end line recognition using the provided ground-truth labels. The output of this procedure is stored under the directory *./results/$current_date/*. It comprises three primary sub-folders:
+This command loads the *IAM-data*, preprocesses it, splits it into train, validation, and test sets, and conducts end-to-end line recognition using the provided ground-truth labels. The output of this procedure is stored under the directory *./results/$current_date/*. This directory comprises three primary sub-folders:
 
  - The first, named *logs/*, holds the logs of the training and validation processes, along with a text document named *output.txt* containing the model's predictions and ground-truth labels for each image.
  - The second, titled *model/*, stores the model checkpoint from the last epoch as *LSTM_model.h5*.
@@ -138,7 +139,7 @@ Moreover, two common error metrics in HTR, the *Character Error Rate (CER)* and 
 $ python3 src/main.py  ./IAM-data/ --mode train --final
 ```
 
-**2.** Transfer the desired model and training settings folders to the directory path "*./results/run_final_model/*". Make sure to update the */$current_date/* accordingly.
+**2.** Transfer the trained model and training settings folders to the directory path "*./results/run_final_model/*". Make sure to update the */$current_date/* accordingly.
 
 ``` shell
 $ mkdir -p ./results/run_final_model/
@@ -146,7 +147,7 @@ $ cp -r ./results/$current_date/model ./results/run_final_model/
 $ cp -r ./results/$current_date/settings ./results/run_final_model/
 ```
 
-**3.** Run the *main.py* script, setting the `--mode` argument to `test`:
+**3.** Run the *main.py* script, specifying the inference data path and setting the `--mode` argument to `test`:
 
 ``` python
 $ python3 src/main.py  ./IAM-data/img/ --mode test
